@@ -83,6 +83,11 @@ node lib/scrape.js
 В проекте также есть `Dockerfile` — он подойдёт для Koyeb, Fly.io и других
 хостингов, умеющих Docker.
 
+Чтобы бесплатный Render реже засыпал, в проекте лежит
+`.github/workflows/keep-alive.yml`: GitHub Actions каждые 5 минут пингует
+`/api/health`. После загрузки на GitHub включите вкладку **Actions** и один раз
+запустите workflow вручную. Подробности — в [DEPLOY.md](DEPLOY.md).
+
 ## Обновление информации
 
 | Что | Как часто |
