@@ -85,8 +85,9 @@ node lib/scrape.js
 
 Чтобы бесплатный Render реже засыпал, в проекте лежит
 `.github/workflows/keep-alive.yml`: GitHub Actions каждые 5 минут пингует
-`/api/health`. После загрузки на GitHub включите вкладку **Actions** и один раз
-запустите workflow вручную. Подробности — в [DEPLOY.md](DEPLOY.md).
+`/api/health` с 07:00 до 23:00 по Москве (ночью сервис спит, чтобы не выйти
+за лимит 750 часов). После загрузки на GitHub включите вкладку **Actions**
+и один раз запустите workflow вручную. Подробности — в [DEPLOY.md](DEPLOY.md).
 
 ## Обновление информации
 
