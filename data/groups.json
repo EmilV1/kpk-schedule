@@ -1,0 +1,612 @@
+[
+  {
+    "id": 35,
+    "name": "211-ПНК",
+    "section": 2,
+    "course": 1,
+    "groupNumber": 1,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 36,
+    "name": "212-ПНК",
+    "section": 2,
+    "course": 1,
+    "groupNumber": 2,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 37,
+    "name": "213-ПНК",
+    "section": 2,
+    "course": 1,
+    "groupNumber": 3,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 38,
+    "name": "214-ПНК",
+    "section": 2,
+    "course": 1,
+    "groupNumber": 4,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 39,
+    "name": "215-ПНК",
+    "section": 2,
+    "course": 1,
+    "groupNumber": 5,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 40,
+    "name": "216-ПНК",
+    "section": 2,
+    "course": 1,
+    "groupNumber": 6,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 41,
+    "name": "217-ПНК",
+    "section": 2,
+    "course": 1,
+    "groupNumber": 7,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 42,
+    "name": "221-ПНК",
+    "section": 2,
+    "course": 2,
+    "groupNumber": 1,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 43,
+    "name": "222-ПНК",
+    "section": 2,
+    "course": 2,
+    "groupNumber": 2,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 44,
+    "name": "223-ПНК",
+    "section": 2,
+    "course": 2,
+    "groupNumber": 3,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 45,
+    "name": "224-ПНК",
+    "section": 2,
+    "course": 2,
+    "groupNumber": 4,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 46,
+    "name": "225-ПНК",
+    "section": 2,
+    "course": 2,
+    "groupNumber": 5,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 47,
+    "name": "226-ПНК",
+    "section": 2,
+    "course": 2,
+    "groupNumber": 6,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 48,
+    "name": "227-ПНК",
+    "section": 2,
+    "course": 2,
+    "groupNumber": 7,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 49,
+    "name": "231-ПНК",
+    "section": 2,
+    "course": 3,
+    "groupNumber": 1,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 50,
+    "name": "232-ПНК",
+    "section": 2,
+    "course": 3,
+    "groupNumber": 2,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 51,
+    "name": "233-ПНК",
+    "section": 2,
+    "course": 3,
+    "groupNumber": 3,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 52,
+    "name": "234-ПНК",
+    "section": 2,
+    "course": 3,
+    "groupNumber": 4,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 53,
+    "name": "235-ПНК",
+    "section": 2,
+    "course": 3,
+    "groupNumber": 5,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 61,
+    "name": "236-ПНК",
+    "section": 2,
+    "course": 3,
+    "groupNumber": 6,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 62,
+    "name": "237-ПНК",
+    "section": 2,
+    "course": 3,
+    "groupNumber": 7,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 54,
+    "name": "241-ПНК",
+    "section": 2,
+    "course": 4,
+    "groupNumber": 1,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 55,
+    "name": "242-ПНК",
+    "section": 2,
+    "course": 4,
+    "groupNumber": 2,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 56,
+    "name": "243-ПНК",
+    "section": 2,
+    "course": 4,
+    "groupNumber": 3,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 57,
+    "name": "244-ПНК",
+    "section": 2,
+    "course": 4,
+    "groupNumber": 4,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 67,
+    "name": "245-ПНК",
+    "section": 2,
+    "course": 4,
+    "groupNumber": 5,
+    "specialtyKey": "ПНК",
+    "specialtyCode": "44.02.02",
+    "specialtyName": "Преподавание в начальных классах"
+  },
+  {
+    "id": 1,
+    "name": "311-ДО",
+    "section": 3,
+    "course": 1,
+    "groupNumber": 1,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 2,
+    "name": "312-ДО",
+    "section": 3,
+    "course": 1,
+    "groupNumber": 2,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 3,
+    "name": "313-ДО",
+    "section": 3,
+    "course": 1,
+    "groupNumber": 3,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 4,
+    "name": "321-ДО",
+    "section": 3,
+    "course": 2,
+    "groupNumber": 1,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 5,
+    "name": "322-ДО",
+    "section": 3,
+    "course": 2,
+    "groupNumber": 2,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 6,
+    "name": "323-ДО",
+    "section": 3,
+    "course": 2,
+    "groupNumber": 3,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 8,
+    "name": "331-ДО",
+    "section": 3,
+    "course": 3,
+    "groupNumber": 1,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 9,
+    "name": "332-ДО",
+    "section": 3,
+    "course": 3,
+    "groupNumber": 2,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 10,
+    "name": "333-ДО",
+    "section": 3,
+    "course": 3,
+    "groupNumber": 3,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 11,
+    "name": "334-ДО",
+    "section": 3,
+    "course": 3,
+    "groupNumber": 4,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 13,
+    "name": "341-ДО",
+    "section": 3,
+    "course": 4,
+    "groupNumber": 1,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 14,
+    "name": "342-ДО",
+    "section": 3,
+    "course": 4,
+    "groupNumber": 2,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 15,
+    "name": "343-ДО",
+    "section": 3,
+    "course": 4,
+    "groupNumber": 3,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 16,
+    "name": "344-ДО",
+    "section": 3,
+    "course": 4,
+    "groupNumber": 4,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 17,
+    "name": "345-ДО",
+    "section": 3,
+    "course": 4,
+    "groupNumber": 5,
+    "specialtyKey": "ДО",
+    "specialtyCode": "44.02.01",
+    "specialtyName": "Дошкольное образование"
+  },
+  {
+    "id": 24,
+    "name": "811-ФК",
+    "section": 8,
+    "course": 1,
+    "groupNumber": 1,
+    "specialtyKey": "ФК",
+    "specialtyCode": "49.02.01",
+    "specialtyName": "Физическая культура"
+  },
+  {
+    "id": 25,
+    "name": "812-ФК",
+    "section": 8,
+    "course": 1,
+    "groupNumber": 2,
+    "specialtyKey": "ФК",
+    "specialtyCode": "49.02.01",
+    "specialtyName": "Физическая культура"
+  },
+  {
+    "id": 27,
+    "name": "821-ФК",
+    "section": 8,
+    "course": 2,
+    "groupNumber": 1,
+    "specialtyKey": "ФК",
+    "specialtyCode": "49.02.01",
+    "specialtyName": "Физическая культура"
+  },
+  {
+    "id": 28,
+    "name": "822-ФК",
+    "section": 8,
+    "course": 2,
+    "groupNumber": 2,
+    "specialtyKey": "ФК",
+    "specialtyCode": "49.02.01",
+    "specialtyName": "Физическая культура"
+  },
+  {
+    "id": 29,
+    "name": "823-ФК",
+    "section": 8,
+    "course": 2,
+    "groupNumber": 3,
+    "specialtyKey": "ФК",
+    "specialtyCode": "49.02.01",
+    "specialtyName": "Физическая культура"
+  },
+  {
+    "id": 30,
+    "name": "831-ФК",
+    "section": 8,
+    "course": 3,
+    "groupNumber": 1,
+    "specialtyKey": "ФК",
+    "specialtyCode": "49.02.01",
+    "specialtyName": "Физическая культура"
+  },
+  {
+    "id": 31,
+    "name": "832-ФК",
+    "section": 8,
+    "course": 3,
+    "groupNumber": 2,
+    "specialtyKey": "ФК",
+    "specialtyCode": "49.02.01",
+    "specialtyName": "Физическая культура"
+  },
+  {
+    "id": 32,
+    "name": "833-ФК",
+    "section": 8,
+    "course": 3,
+    "groupNumber": 3,
+    "specialtyKey": "ФК",
+    "specialtyCode": "49.02.01",
+    "specialtyName": "Физическая культура"
+  },
+  {
+    "id": 33,
+    "name": "841-ФК",
+    "section": 8,
+    "course": 4,
+    "groupNumber": 1,
+    "specialtyKey": "ФК",
+    "specialtyCode": "49.02.01",
+    "specialtyName": "Физическая культура"
+  },
+  {
+    "id": 58,
+    "name": "843-ФК",
+    "section": 8,
+    "course": 4,
+    "groupNumber": 3,
+    "specialtyKey": "ФК",
+    "specialtyCode": "49.02.01",
+    "specialtyName": "Физическая культура"
+  },
+  {
+    "id": 59,
+    "name": "711-АФК",
+    "section": 7,
+    "course": 1,
+    "groupNumber": 1,
+    "specialtyKey": "АФК",
+    "specialtyCode": "49.02.02",
+    "specialtyName": "Адаптивная физическая культура"
+  },
+  {
+    "id": 60,
+    "name": "712-АФК",
+    "section": 7,
+    "course": 1,
+    "groupNumber": 2,
+    "specialtyKey": "АФК",
+    "specialtyCode": "49.02.02",
+    "specialtyName": "Адаптивная физическая культура"
+  },
+  {
+    "id": 19,
+    "name": "921-ИСиП",
+    "section": 9,
+    "course": 2,
+    "groupNumber": 1,
+    "specialtyKey": "ИСиП",
+    "specialtyCode": "09.02.07",
+    "specialtyName": "Информационные системы и программирование"
+  },
+  {
+    "id": 21,
+    "name": "931-ИСиП",
+    "section": 9,
+    "course": 3,
+    "groupNumber": 1,
+    "specialtyKey": "ИСиП",
+    "specialtyCode": "09.02.07",
+    "specialtyName": "Информационные системы и программирование"
+  },
+  {
+    "id": 63,
+    "name": "932-ИСиП",
+    "section": 9,
+    "course": 3,
+    "groupNumber": 2,
+    "specialtyKey": "ИСиП",
+    "specialtyCode": "09.02.07",
+    "specialtyName": "Информационные системы и программирование"
+  },
+  {
+    "id": 22,
+    "name": "941-ИСиП",
+    "section": 9,
+    "course": 4,
+    "groupNumber": 1,
+    "specialtyKey": "ИСиП",
+    "specialtyCode": "09.02.07",
+    "specialtyName": "Информационные системы и программирование"
+  },
+  {
+    "id": 18,
+    "name": "911-ТЭ",
+    "section": 9,
+    "course": 1,
+    "groupNumber": 1,
+    "specialtyKey": "ТЭ",
+    "specialtyCode": "09.02.12",
+    "specialtyName": "Техническая эксплуатация и сопровождение информационных систем"
+  },
+  {
+    "id": 64,
+    "name": "511-КП",
+    "section": 5,
+    "course": 1,
+    "groupNumber": 1,
+    "specialtyKey": "КП",
+    "specialtyCode": "44.02.05",
+    "specialtyName": "Коррекционная педагогика в начальном образовании"
+  },
+  {
+    "id": 65,
+    "name": "512-КП",
+    "section": 5,
+    "course": 1,
+    "groupNumber": 2,
+    "specialtyKey": "КП",
+    "specialtyCode": "44.02.05",
+    "specialtyName": "Коррекционная педагогика в начальном образовании"
+  },
+  {
+    "id": 66,
+    "name": "411-ПДО",
+    "section": 4,
+    "course": 1,
+    "groupNumber": 1,
+    "specialtyKey": "ПДО",
+    "specialtyCode": "44.02.03",
+    "specialtyName": "Педагогика дополнительного образования"
+  }
+]

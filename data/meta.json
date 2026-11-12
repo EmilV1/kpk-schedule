@@ -1,0 +1,38 @@
+{
+  "institution": {
+    "name": "ГАПОУ «Казанский педагогический колледж»",
+    "shortName": "КПК",
+    "address": "420087, г. Казань, ул. Даурская, д. 30",
+    "phone": "+7(843)-298-42-44",
+    "email": "Kazansk.Ped@tatar.ru",
+    "director": "Залялова Анфиса Григорьевна",
+    "founded": 1876,
+    "students": 1750,
+    "teachers": 84,
+    "siteUrl": "https://edu.tatar.ru/sovetcki/org6264"
+  },
+  "publication": {
+    "id": "01a058c1-6a6e-7b1a-8b8a-e632e9e51329",
+    "name": "ГАПОУ \" Казанский педагогический колледж\"",
+    "url": null,
+    "type": "Spo",
+    "fullTeacherFio": false,
+    "hideWindowGroups": false,
+    "lessonsColumnDirection": false,
+    "hideEmptyDay": true,
+    "displayCabinets": true,
+    "displayTeachers": true,
+    "isTeachersView": false,
+    "publishedDate": "2026-11-12T09:36:59.508314Z"
+  },
+  "publicationUrl": "https://site.mstimetables.ru/01a058c16a6e7b1a8b8ae632e9e51329",
+  "sourceUrl": "https://edu.tatar.ru/sovetcki/org6264",
+  "updatedAt": "2026-11-12T15:30:35.464Z",
+  "counts": {
+    "groups": 61,
+    "teachers": 142,
+    "photos": 33,
+    "scheduleTeachers": 143,
+    "profiles": 78
+  }
+}

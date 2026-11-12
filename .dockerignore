@@ -1,0 +1,9 @@
+.git
+.gitignore
+node_modules
+shots
+*.md
+.chrome*
+.cdp
+data/schedule-cache.json
+*.log

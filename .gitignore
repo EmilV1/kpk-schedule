@@ -1,0 +1,7 @@
+node_modules/
+.chrome*/
+.cdp/
+dom*.html
+data/schedule-cache.json
+*.log
+.DS_Store

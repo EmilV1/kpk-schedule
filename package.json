@@ -1,0 +1,21 @@
+{
+  "name": "kpk-schedule",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Современный сайт расписания Казанского педагогического колледжа",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "refresh": "node lib/scrape.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "расписание",
+    "колледж",
+    "кпк",
+    "mstimetables"
+  ],
+  "license": "UNLICENSED"
+}
