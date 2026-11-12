@@ -6,10 +6,16 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "refresh": "node lib/scrape.js"
+    "refresh": "node lib/scrape.js",
+    "build:worker": "node scripts/build-bootstrap.mjs",
+    "dev:worker": "npm run build:worker && wrangler dev",
+    "deploy:worker": "npm run build:worker && wrangler deploy"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "wrangler": "^4.161.0"
   },
   "keywords": [
     "расписание",

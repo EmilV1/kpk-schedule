@@ -1,0 +1,45 @@
+name: Refresh teachers
+
+on:
+  schedule:
+    # Каждый день в 05:00 по Москве (02:00 UTC).
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-teachers
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Scrape teachers and photos
+        run: node lib/scrape.js
+
+      - name: Build static bootstrap
+        run: node scripts/build-bootstrap.mjs
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data public/photos public/data/bootstrap.json
+          if git diff --cached --quiet; then
+            echo "Изменений нет"
+          else
+            git commit -m "Автообновление преподавателей"
+            git push
+          fi

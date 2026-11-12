@@ -1,4 +1,8 @@
 node_modules/
+.npm-cache/
+.wrangler/
+.wrangler-dry/
+.dev.vars
 .chrome*/
 .cdp/
 dom*.html
