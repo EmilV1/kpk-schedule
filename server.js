@@ -68,10 +68,14 @@ async function readBootstrap(force = false) {
     const meta = JSON.parse(metaRaw);
     const groups = JSON.parse(groupsRaw);
     const teachers = JSON.parse(teachersRaw);
+    const rooms = JSON.parse(
+      await fsp.readFile(path.join(DATA_DIR, 'rooms.json'), 'utf8')
+    );
     bootstrapCache = {
       meta,
       groups,
       teachers,
+      rooms,
       mtimeMs: Date.now(),
     };
     return bootstrapCache;

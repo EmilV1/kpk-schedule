@@ -1160,6 +1160,28 @@ img {
   white-space: nowrap;
 }
 
+.lesson__room-link {
+  color: var(--muted);
+  text-decoration: none;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.lesson__room-link:hover {
+  color: var(--accent);
+}
+
+.lesson__room-link .icon:last-child {
+  margin-left: auto;
+  opacity: 0.4;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.lesson__room-link:hover .icon:last-child {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
 .lesson__teacher {
   font-size: 11.5px;
   color: var(--text-soft);
@@ -1256,9 +1278,9 @@ img {
 /* Мобильные табы дней */
 .day-tabs {
   display: none;
-  gap: 6px;
+  gap: 4px;
   overflow-x: auto;
-  padding: 2px 2px 10px;
+  padding: 2px 0 9px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
@@ -1268,37 +1290,44 @@ img {
 }
 
 .day-tab {
-  flex: 0 0 auto;
-  min-width: 54px;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  padding: 8px 9px 7px;
-  border-radius: 13px;
+  padding: 7px 3px 6px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   background: var(--surface);
   cursor: pointer;
   transition: all 0.15s ease;
+  overflow: hidden;
 }
 
 .day-tab__name {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 650;
   color: var(--muted);
   text-transform: capitalize;
+  white-space: nowrap;
 }
 
 .day-tab__date {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 750;
   font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 
 .day-tab__count {
-  font-size: 9px;
+  font-size: 8px;
   color: var(--faint);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .day-tab.is-active {
@@ -2668,12 +2697,16 @@ img {
   }
 
   .day-tab {
-    min-width: 50px;
-    padding: 7px 8px 6px;
+    min-width: 0;
+    padding: 6px 2px 5px;
   }
 
   .day-tab__date {
-    font-size: 14px;
+    font-size: 13.5px;
+  }
+
+  .day-tab__count {
+    font-size: 7.5px;
   }
 
   .toast-root {

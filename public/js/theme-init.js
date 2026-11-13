@@ -1,9 +1,16 @@
 (function () {
   try {
-    var stored = localStorage.getItem('kpk:theme');
+    var stored = null;
+    try {
+      stored = JSON.parse(localStorage.getItem('kpk:theme'));
+    } catch (e) {
+      // старые версии могли записать тему без JSON-кавычек
+      stored = localStorage.getItem('kpk:theme');
+    }
     var prefersDark =
       window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var theme = stored === 'dark' || stored === 'light' ? stored : prefersDark ? 'dark' : 'light';
+    var theme =
+      stored === 'dark' || stored === 'light' ? stored : prefersDark ? 'dark' : 'light';
     var forced = new URLSearchParams(window.location.search).get('theme');
     if (forced === 'light' || forced === 'dark') theme = forced;
     document.documentElement.setAttribute('data-theme', theme);

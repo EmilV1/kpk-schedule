@@ -118,6 +118,23 @@ function cabinetOf(lesson) {
   return (lesson.cabinet && lesson.cabinet.name) || '';
 }
 
+function roomKey(value) {
+  return normalize(value).replace(/[^a-zа-я0-9]/g, '');
+}
+
+function findRoomForCabinet(rooms, cabinetName) {
+  if (!rooms || !cabinetName) return null;
+  const target = roomKey(cabinetName);
+  for (const floor of rooms.floors || []) {
+    for (const room of floor.rooms || []) {
+      if (room.cabinet && roomKey(room.cabinet) === target) {
+        return { floor: floor.floor, id: room.id };
+      }
+    }
+  }
+  return null;
+}
+
 function lessonBadge(lesson) {
   const badges = [];
   if (lesson.replacementType && lesson.replacementType !== 'none') badges.push('замена');
@@ -437,7 +454,7 @@ export function liveBannerHTML(live, { mode = 'group', isCurrentWeek = true, les
 /* Уроки и неделя                                                      */
 /* ------------------------------------------------------------------ */
 
-function lessonCardHTML(lesson, { mode = 'group', liveIds = new Set(), today = false } = {}) {
+function lessonCardHTML(lesson, { mode = 'group', liveIds = new Set(), today = false, rooms = null } = {}) {
   const id = String(lesson.id);
   const isNow = liveIds.has(id);
   const isPast = today && !isNow && lessonEnd(lesson) <= collegeNow().minutes;
@@ -452,8 +469,16 @@ function lessonCardHTML(lesson, { mode = 'group', liveIds = new Set(), today = f
 
   const metaRows = [];
   if (cabinet) {
+    const room = findRoomForCabinet(rooms, cabinet);
     metaRows.push(
-      `<div class="lesson__meta-row">${icon('pin')}<span>${e(cabinet)}</span></div>`
+      room
+        ? `<a class="lesson__meta-row lesson__room-link" href="#/map/${room.floor}/${room.id}" title="Показать ${e(
+            cabinet
+          )} на карте">${icon('pin')}<span>${e(cabinet)}</span>${icon(
+            'arrow-right',
+            'icon--sm'
+          )}</a>`
+        : `<div class="lesson__meta-row">${icon('pin')}<span>${e(cabinet)}</span></div>`
     );
   }
 
@@ -476,7 +501,7 @@ function lessonCardHTML(lesson, { mode = 'group', liveIds = new Set(), today = f
   `;
 }
 
-function dayColumnHTML(dateKey, lessons, { mode, liveIds, mobileDay }) {
+function dayColumnHTML(dateKey, lessons, { mode, liveIds, mobileDay, rooms }) {
   const now = collegeNow();
   const isToday = dateKey === now.date;
   const isMobileActive = mobileDay === dateKey;
@@ -492,7 +517,7 @@ function dayColumnHTML(dateKey, lessons, { mode, liveIds, mobileDay }) {
         ${
           count
             ? sortLessons(lessons)
-                .map((lesson) => lessonCardHTML(lesson, { mode, liveIds, today: isToday }))
+                .map((lesson) => lessonCardHTML(lesson, { mode, liveIds, today: isToday, rooms }))
                 .join('')
             : `<div class="empty-day">${icon('inbox')}<span>Нет уроков</span></div>`
         }
@@ -610,6 +635,7 @@ export function scheduleView(state) {
                            mode: 'group',
                            liveIds,
                            mobileDay,
+                           rooms: state.rooms,
                          })
                        )
                        .join('')}
@@ -920,6 +946,7 @@ export function teacherScheduleView(state) {
                            mode: 'teacher',
                            liveIds,
                            mobileDay,
+                           rooms: state.rooms,
                          })
                        )
                        .join('')}
@@ -1182,6 +1209,38 @@ function roomChipsHTML(floor, data, selectedRoom) {
   </div>`;
 }
 
+export function buildingsView(state) {
+  return `
+    <div class="page-head">
+      <div>
+        <div class="eyebrow">${e(state.meta.institution.shortName)} · корпуса</div>
+        <h1 class="page-head__title">Карта кабинетов</h1>
+        <p class="page-head__sub">Выберите здание, чтобы посмотреть схему этажей</p>
+      </div>
+    </div>
+
+    <div class="building-grid">
+      <button class="building-card is-disabled" type="button" disabled aria-label="1 здание — скоро">
+        <span class="building-card__badge">Скоро</span>
+        <span class="building-card__icon">${icon('map')}</span>
+        <span class="building-card__num">1</span>
+        <h2>1 здание</h2>
+        <p>Схема первого здания появится позже</p>
+        <span class="building-card__note">В разработке</span>
+      </button>
+
+      <a class="building-card is-ready" href="#/map/1">
+        <span class="building-card__badge">4 этажа</span>
+        <span class="building-card__icon">${icon('map')}</span>
+        <span class="building-card__num">2</span>
+        <h2>2 здание</h2>
+        <p>Кабинеты 1–45, спортзал, актовый зал, столовая</p>
+        <span class="building-card__note">Открыть карту ${icon('arrow-right', 'icon--sm')}</span>
+      </a>
+    </div>
+  `;
+}
+
 export function mapView(state) {
   const map = state.map || { floor: 1, data: {}, selectedRoom: null };
   const floor = getFloor(map.floor);
@@ -1196,6 +1255,9 @@ export function mapView(state) {
   return `
     <div class="page-head">
       <div>
+        <a class="btn btn--ghost btn--sm page-head__back" href="#/map">${icon(
+          'chevron-left'
+        )} Все здания</a>
         <div class="eyebrow">${e(state.meta.institution.shortName)} · корпус</div>
         <h1 class="page-head__title">Карта кабинетов</h1>
         <p class="page-head__sub">

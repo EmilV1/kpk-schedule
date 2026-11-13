@@ -9,6 +9,7 @@ import {
   startOfWeek,
 } from './time.js';
 import {
+  buildingsView,
   errorView,
   filterGroups,
   filterTeachers,
@@ -35,6 +36,7 @@ const state = {
   meta: null,
   groups: [],
   teachers: [],
+  rooms: null,
   route: { name: 'welcome' },
   group: null,
   weekStart: null,
@@ -128,8 +130,10 @@ function parseRoute() {
   }
   if (segments[0] === 'teachers') return { name: 'teachers' };
   if (segments[0] === 'map') {
+    if (!segments[1]) return { name: 'buildings' };
     const floor = Number(segments[1]);
-    return { name: 'map', floor: [1, 2, 3, 4].includes(floor) ? floor : 1 };
+    if (![1, 2, 3, 4].includes(floor)) return { name: 'buildings' };
+    return { name: 'map', floor, room: segments[2] || null };
   }
   if (segments[0] === 'schedule') return { name: 'schedule' };
   return { name: 'welcome' };
@@ -165,6 +169,7 @@ function updateHeader() {
     teacher: 'teachers',
     teachers: 'teachers',
     map: 'map',
+    buildings: 'map',
   };
   const active = navMap[state.route.name] || '';
   for (const link of $$('[data-nav]')) {
@@ -200,6 +205,8 @@ function updateTitle() {
     document.title = 'Преподаватели — КПК';
   } else if (state.route.name === 'map') {
     document.title = 'Карта кабинетов — КПК';
+  } else if (state.route.name === 'buildings') {
+    document.title = 'Карта кабинетов — выбор здания · КПК';
   } else if (state.route.name === 'teacher' && state.teacher) {
     document.title = `${state.teacher.fio} — расписание · КПК`;
   } else {
@@ -241,6 +248,8 @@ function render() {
     view = teachersView(state);
   } else if (state.route.name === 'map') {
     view = mapView(state);
+  } else if (state.route.name === 'buildings') {
+    view = buildingsView(state);
   } else if (state.route.name === 'teacher') {
     view = teacherScheduleView(state);
   } else if (state.route.name === 'schedule' && state.group) {
@@ -450,10 +459,17 @@ async function applyRoute() {
     return;
   }
 
+  if (route.name === 'buildings') {
+    state.route = { name: 'buildings' };
+    render();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    return;
+  }
+
   if (route.name === 'map') {
     state.route = { name: 'map' };
     if ([1, 2, 3, 4].includes(route.floor)) state.map.floor = route.floor;
-    state.map.selectedRoom = null;
+    state.map.selectedRoom = route.room || null;
     state.map.error = null;
     render();
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -612,6 +628,7 @@ async function refreshData() {
     state.meta = bootstrap.meta;
     state.groups = bootstrap.groups;
     state.teachers = bootstrap.teachers;
+    state.rooms = bootstrap.rooms || state.rooms;
     if (state.group) {
       state.group =
         state.groups.find((item) => item.id === state.group.id) || state.group;
@@ -1042,6 +1059,7 @@ async function init() {
     state.meta = data.meta;
     state.groups = data.groups || [];
     state.teachers = data.teachers || [];
+    state.rooms = data.rooms || null;
     state.ready = true;
     state.bootstrapError = null;
     await applyRoute();

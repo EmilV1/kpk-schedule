@@ -14,11 +14,13 @@ const [meta, groups, teachers] = await Promise.all([
   readJson('teachers.json'),
 ]);
 const roomsConfig = await readFile(path.join(dataDir, 'rooms.json'), 'utf8');
+const rooms = JSON.parse(roomsConfig);
 
 const payload = {
   meta,
   groups,
   teachers,
+  rooms,
   timezone: 'Europe/Moscow',
   generatedAt: new Date().toISOString(),
 };
