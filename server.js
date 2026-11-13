@@ -260,6 +260,214 @@ function daysBetween(start, end) {
 /* API                                                                 */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/* API карты кабинетов                                                 */
+/* ------------------------------------------------------------------ */
+
+const roomsCache = new Map();
+const MOSCOW_PARTS = new Intl.DateTimeFormat('en-CA', {
+  timeZone: COLLEGE_TZ,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+function moscowNow() {
+  const parts = {};
+  for (const part of MOSCOW_PARTS.formatToParts(new Date())) {
+    if (part.type !== 'literal') parts[part.type] = part.value;
+  }
+  const hours = Number(parts.hour) % 24;
+  const minutes = Number(parts.minute);
+  return {
+    date: `${parts.year}-${parts.month}-${parts.day}`,
+    minutes: hours * 60 + minutes,
+    timeText: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`,
+  };
+}
+
+function datePlusDays(date, days) {
+  const value = new Date(`${date}T12:00:00Z`);
+  value.setUTCDate(value.getUTCDate() + days);
+  return value.toISOString().slice(0, 10);
+}
+
+function normalizeCabinetName(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[^a-zа-я0-9]/g, '');
+}
+
+function roomLessonStart(lesson) {
+  if (Number.isFinite(lesson.startTimeMin)) return lesson.startTimeMin;
+  const [hours, minutes] = String(lesson.startTime || '0:0').split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function roomLessonEnd(lesson) {
+  if (Number.isFinite(lesson.endTimeMin)) return lesson.endTimeMin;
+  const [hours, minutes] = String(lesson.endTime || '0:0').split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function summarizeRoomLesson(lesson) {
+  const groups = [];
+  const groupSeen = new Set();
+  for (const union of lesson.unionGroups || []) {
+    const group = union.group;
+    if (group && !groupSeen.has(group.id)) {
+      groupSeen.add(group.id);
+      groups.push({ id: group.id, name: group.name });
+    }
+  }
+  const teachers = [];
+  const teacherSeen = new Set();
+  for (const teacher of lesson.teachers || []) {
+    if (!teacherSeen.has(teacher.id)) {
+      teacherSeen.add(teacher.id);
+      teachers.push({ id: teacher.id, fio: teacher.fio });
+    }
+  }
+  return {
+    id: lesson.id,
+    date: lesson.date,
+    lessonNumber: lesson.lessonNumber,
+    startTime: lesson.startTime,
+    endTime: lesson.endTime,
+    subject: lesson.subject ? lesson.subject.name : 'Урок',
+    groups,
+    teachers,
+    replacement:
+      lesson.replacementType && lesson.replacementType !== 'none' ? 'замена' : null,
+  };
+}
+
+function buildRoomStatus(entry, now) {
+  const base = {
+    cabinet: entry.room.cabinet || null,
+    cabinetId: entry.cabinet ? entry.cabinet.id : null,
+    status: 'no-data',
+    current: [],
+    next: null,
+    note: entry.note || '',
+  };
+  if (!entry.room.cabinet || !entry.cabinet || !entry.lessons) return base;
+
+  const lessons = entry.lessons.slice().sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+    return roomLessonStart(a) - roomLessonStart(b);
+  });
+  const current = lessons.filter(
+    (lesson) =>
+      lesson.date === now.date &&
+      roomLessonStart(lesson) <= now.minutes &&
+      now.minutes < roomLessonEnd(lesson)
+  );
+  const upcoming = lessons.filter(
+    (lesson) =>
+      lesson.date > now.date ||
+      (lesson.date === now.date && roomLessonStart(lesson) > now.minutes)
+  );
+
+  let next = null;
+  if (current.length) {
+    const maxEnd = Math.max(...current.map(roomLessonEnd));
+    next =
+      lessons.find(
+        (lesson) =>
+          lesson.date > now.date ||
+          (lesson.date === now.date && roomLessonStart(lesson) >= maxEnd)
+      ) || null;
+  } else {
+    next = upcoming[0] || null;
+  }
+
+  return {
+    ...base,
+    status: current.length ? 'busy' : 'free',
+    current: current.map(summarizeRoomLesson),
+    next: next ? summarizeRoomLesson(next) : null,
+    note: !next
+      ? current.length
+        ? 'На ближайшие дни уроков больше нет'
+        : 'На ближайшие дни уроков нет'
+      : '',
+  };
+}
+
+async function handleRoomsApi(req, res, url) {
+  if (req.method !== 'GET') return sendError(res, 405, 'Метод не поддерживается');
+  const floor = Number(url.searchParams.get('floor') || 1);
+  if (![1, 2, 3, 4].includes(floor)) {
+    return sendError(res, 400, 'Некорректный этаж');
+  }
+
+  const now = moscowNow();
+  const fresh = url.searchParams.get('fresh') === '1';
+  const cacheKey = `${floor}:${now.date}`;
+  const cached = roomsCache.get(cacheKey);
+  if (!fresh && cached && Date.now() - cached.fetchedAt < SCHEDULE_TTL_MS) {
+    return sendJson(res, 200, { ...cached.data, cached: true });
+  }
+
+  let config;
+  try {
+    config = JSON.parse(await fsp.readFile(path.join(DATA_DIR, 'rooms.json'), 'utf8'));
+  } catch {
+    return sendError(res, 503, 'Нет data/rooms.json');
+  }
+  const floorConfig = (config.floors || []).find((item) => Number(item.floor) === floor);
+  if (!floorConfig) return sendError(res, 404, 'Этаж не найден');
+
+  try {
+    const cabinets = await fetchUpstream('/cabinets');
+    const byName = new Map(
+      (cabinets || []).map((cabinet) => [normalizeCabinetName(cabinet.name), cabinet])
+    );
+    const end = datePlusDays(now.date, 3);
+
+    const entries = await Promise.all(
+      floorConfig.rooms.map(async (room) => {
+        if (!room.cabinet) {
+          return { room, cabinet: null, lessons: null, note: 'Кабинет не используется в расписании' };
+        }
+        const cabinet = byName.get(normalizeCabinetName(room.cabinet));
+        if (!cabinet) {
+          return { room, cabinet: null, lessons: null, note: 'Кабинет не найден в расписании' };
+        }
+        try {
+          const data = await fetchUpstream(
+            `/cabinets/${cabinet.id}/lessons?startDate=${now.date}&endDate=${end}`
+          );
+          return { room, cabinet, lessons: data.lessons || [], note: '' };
+        } catch {
+          return { room, cabinet, lessons: null, note: 'Не удалось получить данные' };
+        }
+      })
+    );
+
+    const rooms = {};
+    for (const entry of entries) rooms[entry.room.id] = buildRoomStatus(entry, now);
+    const payload = {
+      floor,
+      building: config.building || '',
+      date: now.date,
+      now: now.timeText,
+      updatedAt: new Date().toISOString(),
+      rooms,
+    };
+    roomsCache.set(cacheKey, { data: payload, fetchedAt: Date.now() });
+    return sendJson(res, 200, payload);
+  } catch (err) {
+    console.error('[server] rooms:', err);
+    return sendError(res, 502, 'Не удалось получить данные кабинетов');
+  }
+}
+
 async function handleApi(req, res, url) {
   const pathname = url.pathname;
 
@@ -307,8 +515,11 @@ async function handleApi(req, res, url) {
     }
   }
 
-  if (pathname === '/api/schedule' || pathname === '/api/teacher-schedule') {
-    const kind = pathname === '/api/teacher-schedule' ? 'teacher' : 'group';
+  if (pathname === '/api/rooms') {
+    return await handleRoomsApi(req, res, url);
+  }
+
+  if (pathname === '/api/schedule' || pathname === '/api/teacher-schedule') {    const kind = pathname === '/api/teacher-schedule' ? 'teacher' : 'group';
     const id = Number(url.searchParams.get('id'));
     const start = url.searchParams.get('start') || '';
     const end = url.searchParams.get('end') || '';

@@ -5,6 +5,7 @@ node_modules/
 .dev.vars
 .chrome*/
 .cdp/
+.cdp*/
 dom*.html
 data/schedule-cache.json
 *.log

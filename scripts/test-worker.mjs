@@ -32,6 +32,12 @@ const env = {
           headers: { 'content-type': 'application/json; charset=utf-8' },
         });
       }
+      if (url.pathname === '/data/rooms.json') {
+        const body = fs.readFileSync(path.join(root, 'data', 'rooms.json'));
+        return new Response(body, {
+          headers: { 'content-type': 'application/json; charset=utf-8' },
+        });
+      }
       if (url.pathname === '/' || url.pathname === '/index.html') {
         return new Response(fs.readFileSync(path.join(root, 'public', 'index.html')), {
           headers: { 'content-type': 'text/html; charset=utf-8' },
@@ -93,6 +99,8 @@ results.badDate = await call(
 results.refresh = await call('https://kpk.example/api/refresh', { method: 'POST' });
 results.refreshGet = await call('https://kpk.example/api/refresh');
 results.notFound = await call('https://kpk.example/api/nope');
+results.rooms1 = await call('https://kpk.example/api/rooms?floor=1');
+results.rooms4 = await call('https://kpk.example/api/rooms?floor=4');
 
 console.log(
   JSON.stringify(
@@ -121,6 +129,25 @@ console.log(
       refresh: { status: results.refresh.status, updatedAt: results.refresh.data?.updatedAt },
       refreshGet: { status: results.refreshGet.status },
       notFound: { status: results.notFound.status },
+      rooms1: {
+        status: results.rooms1.status,
+        floor: results.rooms1.data?.floor,
+        building: results.rooms1.data?.building,
+        rooms: results.rooms1.data ? Object.keys(results.rooms1.data.rooms).length : null,
+        sample: results.rooms1.data?.rooms
+          ? Object.entries(results.rooms1.data.rooms).slice(0, 3).map(([id, value]) => ({
+              id,
+              status: value.status,
+              cabinet: value.cabinet,
+              current: value.current?.length,
+              next: value.next?.subject,
+            }))
+          : null,
+      },
+      rooms4: {
+        status: results.rooms4.status,
+        rooms: results.rooms4.data ? Object.keys(results.rooms4.data.rooms).length : null,
+      },
     },
     null,
     2

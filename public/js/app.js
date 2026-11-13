@@ -14,6 +14,7 @@ import {
   filterTeachers,
   footerHTML,
   groupListHTML,
+  mapView,
   pickerModalHTML,
   scheduleView,
   skeletonView,
@@ -48,6 +49,14 @@ const state = {
   teacherError: null,
   teacherLiveSchedule: null,
   teacherLiveWeekStart: null,
+  map: {
+    floor: 1,
+    selectedRoom: null,
+    data: {},
+    loadedAt: {},
+    loading: false,
+    error: null,
+  },
   filters: { query: '', mode: 'all', department: 'all' },
   pickerQuery: '',
   pickerSpecialty: 'all',
@@ -59,6 +68,7 @@ const state = {
 };
 
 let routeToken = 0;
+let mapRequest = 0;
 let liveTimer = null;
 let autoRefreshTimer = null;
 let lastFocused = null;
@@ -117,6 +127,10 @@ function parseRoute() {
     return { name: 'teacher', teacherId: segments[1], week: isDateKey(segments[2]) ? segments[2] : null };
   }
   if (segments[0] === 'teachers') return { name: 'teachers' };
+  if (segments[0] === 'map') {
+    const floor = Number(segments[1]);
+    return { name: 'map', floor: [1, 2, 3, 4].includes(floor) ? floor : 1 };
+  }
   if (segments[0] === 'schedule') return { name: 'schedule' };
   return { name: 'welcome' };
 }
@@ -150,6 +164,7 @@ function updateHeader() {
     schedule: 'schedule',
     teacher: 'teachers',
     teachers: 'teachers',
+    map: 'map',
   };
   const active = navMap[state.route.name] || '';
   for (const link of $$('[data-nav]')) {
@@ -183,6 +198,8 @@ function updateTitle() {
     document.title = `${state.group.name} — расписание · КПК`;
   } else if (state.route.name === 'teachers') {
     document.title = 'Преподаватели — КПК';
+  } else if (state.route.name === 'map') {
+    document.title = 'Карта кабинетов — КПК';
   } else if (state.route.name === 'teacher' && state.teacher) {
     document.title = `${state.teacher.fio} — расписание · КПК`;
   } else {
@@ -222,6 +239,8 @@ function render() {
     view = welcomeView(state);
   } else if (state.route.name === 'teachers') {
     view = teachersView(state);
+  } else if (state.route.name === 'map') {
+    view = mapView(state);
   } else if (state.route.name === 'teacher') {
     view = teacherScheduleView(state);
   } else if (state.route.name === 'schedule' && state.group) {
@@ -327,6 +346,34 @@ async function ensureTeacherLive(token) {
   }
 }
 
+async function loadRooms(floor, { fresh = false, silent = false } = {}) {
+  const existing = state.map.data[floor];
+  if (!fresh && existing && Date.now() - (state.map.loadedAt[floor] || 0) < 120_000) {
+    return;
+  }
+
+  const request = ++mapRequest;
+  state.map.loading = true;
+  state.map.error = null;
+  if (!silent) render();
+
+  try {
+    const data = await api.rooms(floor, { fresh });
+    if (request !== mapRequest) return;
+    if (state.route.name !== 'map' || state.map.floor !== floor) return;
+    state.map.data[floor] = data;
+    state.map.loadedAt[floor] = Date.now();
+    state.map.loading = false;
+    render();
+  } catch (err) {
+    if (request !== mapRequest) return;
+    if (state.route.name !== 'map' || state.map.floor !== floor) return;
+    state.map.loading = false;
+    state.map.error = err.message || 'Не удалось загрузить карту';
+    render();
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Применение маршрута                                                 */
 /* ------------------------------------------------------------------ */
@@ -400,6 +447,17 @@ async function applyRoute() {
     state.route = { name: 'teachers' };
     render();
     window.scrollTo({ top: 0, behavior: 'auto' });
+    return;
+  }
+
+  if (route.name === 'map') {
+    state.route = { name: 'map' };
+    if ([1, 2, 3, 4].includes(route.floor)) state.map.floor = route.floor;
+    state.map.selectedRoom = null;
+    state.map.error = null;
+    render();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    await loadRooms(state.map.floor);
     return;
   }
 
@@ -588,6 +646,8 @@ async function refreshData() {
         state.teacherLiveSchedule = data;
         state.teacherLiveWeekStart = state.weekStart;
       }
+    } else if (state.route.name === 'map') {
+      await loadRooms(state.map.floor, { fresh: true });
     }
     state.stale = false;
     showToast(
@@ -716,6 +776,8 @@ async function autoRefresh() {
     } catch {
       /* ignore */
     }
+  } else if (state.route.name === 'map') {
+    await loadRooms(state.map.floor, { silent: true });
   }
 }
 
@@ -781,6 +843,33 @@ function onDocumentClick(event) {
     for (const column of $$('.day-col')) {
       column.classList.toggle('is-mobile-active', column.dataset.day === state.mobileDay);
     }
+    return;
+  }
+
+  const floorButton = target.closest('[data-floor]');
+  if (floorButton) {
+    const floor = Number(floorButton.dataset.floor);
+    if ([1, 2, 3, 4].includes(floor) && floor !== state.map.floor) {
+      state.map.floor = floor;
+      state.map.selectedRoom = null;
+      state.map.error = null;
+      history.replaceState(null, '', `#/map/${floor}`);
+      render();
+      loadRooms(floor);
+    }
+    return;
+  }
+
+  const mapRefresh = target.closest('[data-map-refresh]');
+  if (mapRefresh) {
+    loadRooms(state.map.floor, { fresh: true });
+    return;
+  }
+
+  const roomButton = target.closest('[data-room-id]');
+  if (roomButton) {
+    state.map.selectedRoom = roomButton.dataset.roomId;
+    render();
     return;
   }
 
@@ -896,6 +985,14 @@ function onDocumentKeydown(event) {
   if (groupTarget && (event.key === 'Enter' || event.key === ' ')) {
     event.preventDefault();
     selectGroup(groupTarget.dataset.group);
+    return;
+  }
+
+  const roomTarget = event.target.closest('[data-room-id]');
+  if (roomTarget && (event.key === 'Enter' || event.key === ' ')) {
+    event.preventDefault();
+    state.map.selectedRoom = roomTarget.dataset.roomId;
+    render();
     return;
   }
 

@@ -1,0 +1,71 @@
+{
+  "building": "2 здание",
+  "floors": [
+    {
+      "floor": 1,
+      "rooms": [
+        { "id": "f1-1", "cabinet": "1 каб.2 здание" },
+        { "id": "f1-2", "cabinet": "2 каб.2 здание" },
+        { "id": "f1-3", "cabinet": "3 каб. 2 здание" },
+        { "id": "f1-4", "cabinet": null },
+        { "id": "f1-5", "cabinet": "5 каб.2 здание" },
+        { "id": "f1-6", "cabinet": null },
+        { "id": "f1-7", "cabinet": null },
+        { "id": "f1-8", "cabinet": null },
+        { "id": "f1-9", "cabinet": "9 каб.2 здание" },
+        { "id": "f1-10", "cabinet": "10 каб.2 здание" },
+        { "id": "f1-11", "cabinet": "11 каб.2 здание" },
+        { "id": "f1-canteen", "cabinet": null }
+      ]
+    },
+    {
+      "floor": 2,
+      "rooms": [
+        { "id": "f2-13", "cabinet": "13 каб.2 здание" },
+        { "id": "f2-14", "cabinet": "14 каб.2 здание" },
+        { "id": "f2-15", "cabinet": "15 каб.2 здание" },
+        { "id": "f2-16", "cabinet": null },
+        { "id": "f2-17", "cabinet": null },
+        { "id": "f2-18", "cabinet": "18 каб.2 здание" },
+        { "id": "f2-19", "cabinet": "19 каб.2 здание" },
+        { "id": "f2-20", "cabinet": "20 каб.2 здание" },
+        { "id": "f2-21", "cabinet": "21 каб.2 здание" },
+        { "id": "f2-22", "cabinet": "22 каб.2здание" },
+        { "id": "f2-23", "cabinet": "23 каб.2 здание" },
+        { "id": "f2-24", "cabinet": "24 каб.2 здание" },
+        { "id": "f2-25", "cabinet": null },
+        { "id": "f2-26", "cabinet": null },
+        { "id": "f2-med", "cabinet": null }
+      ]
+    },
+    {
+      "floor": 3,
+      "rooms": [
+        { "id": "f3-27", "cabinet": "27 каб.2 здание" },
+        { "id": "f3-28", "cabinet": null },
+        { "id": "f3-library", "cabinet": null },
+        { "id": "f3-reading", "cabinet": "читальный зал 2 здание" },
+        { "id": "f3-30", "cabinet": "30 каб. цопп" },
+        { "id": "f3-31", "cabinet": "31 каб.цопп" },
+        { "id": "f3-32", "cabinet": null },
+        { "id": "f3-33", "cabinet": "33 каб. цопп" },
+        { "id": "f3-34", "cabinet": null },
+        { "id": "f3-35", "cabinet": null }
+      ]
+    },
+    {
+      "floor": 4,
+      "rooms": [
+        { "id": "f4-41", "cabinet": "41 каб.2 здание" },
+        { "id": "f4-40", "cabinet": "40 каб.2 здание" },
+        { "id": "f4-coach", "cabinet": null },
+        { "id": "f4-mlocker", "cabinet": null },
+        { "id": "f4-gym", "cabinet": "Спортивный зал 2 здание" },
+        { "id": "f4-assembly", "cabinet": "актовый зал 2 здание" },
+        { "id": "f4-44", "cabinet": null },
+        { "id": "f4-45", "cabinet": "45 каб.цопп" },
+        { "id": "f4-wc", "cabinet": null }
+      ]
+    }
+  ]
+}

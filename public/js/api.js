@@ -36,4 +36,10 @@ export const api = {
     if (fresh) params.set('fresh', '1');
     return request(`/api/teacher-schedule?${params}`);
   },
+
+  rooms(floor, { fresh = false } = {}) {
+    const params = new URLSearchParams({ floor: String(floor) });
+    if (fresh) params.set('fresh', '1');
+    return request(`/api/rooms?${params}`);
+  },
 };

@@ -13,6 +13,7 @@ const [meta, groups, teachers] = await Promise.all([
   readJson('groups.json'),
   readJson('teachers.json'),
 ]);
+const roomsConfig = await readFile(path.join(dataDir, 'rooms.json'), 'utf8');
 
 const payload = {
   meta,
@@ -26,6 +27,7 @@ const outDir = path.join(root, 'public', 'data');
 await mkdir(outDir, { recursive: true });
 const outFile = path.join(outDir, 'bootstrap.json');
 await writeFile(outFile, JSON.stringify(payload), 'utf8');
+await writeFile(path.join(outDir, 'rooms.json'), roomsConfig, 'utf8');
 
 console.log(
   `bootstrap.json: ${groups.length} групп, ${teachers.length} преподавателей, ` +

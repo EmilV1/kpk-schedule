@@ -29,6 +29,7 @@ import {
   weekdayShort,
   yearOf,
 } from './time.js';
+import { FLOORS, getFloor } from './floorplans.js';
 
 const SPECIALTY_ORDER = ['ПНК', 'ДО', 'ФК', 'АФК', 'ИСиП', 'ТЭ', 'КП', 'ПДО'];
 
@@ -266,7 +267,7 @@ export function welcomeView(state) {
       <div class="welcome__hero">
         <span class="welcome__badge">${icon('sparkle')} Расписание в реальном времени</span>
         <h1 class="welcome__title">Какое расписание <span class="accent">открыть?</span></h1>
-        <p class="welcome__text">Выберите группу — покажем пары на неделю, подсветим ту, что идёт сейчас, и посчитаем время до звонка.</p>
+        <p class="welcome__text">Выберите группу — покажем уроки на неделю, подсветим тот, что идёт сейчас, и посчитаем время до звонка.</p>
       </div>
 
       <div class="welcome__panel">
@@ -280,7 +281,7 @@ export function welcomeView(state) {
       </div>
 
       <div class="welcome__features">
-        <span class="feature">${icon('clock')} Текущая пара и перемена</span>
+        <span class="feature">${icon('clock')} Текущий урок и перемена</span>
         <span class="feature">${icon('users')} ${state.teachers.filter((t) => t.photo).length} фото преподавателей</span>
         <span class="feature">${icon('refresh')} Данные с официального сайта</span>
       </div>
@@ -336,7 +337,7 @@ function liveRemaining(live, now) {
 
 function liveMetaParts(lesson, mode) {
   const parts = [];
-  if (lesson.lessonNumber) parts.push(`${lesson.lessonNumber} пара`);
+  if (lesson.lessonNumber) parts.push(`${lesson.lessonNumber} урок`);
   if (lesson.startTime && lesson.endTime) parts.push(`${lesson.startTime}–${lesson.endTime}`);
   const cabinet = cabinetOf(lesson);
   if (cabinet) parts.push(cabinet);
@@ -362,7 +363,7 @@ export function liveBannerHTML(live, { mode = 'group', isCurrentWeek = true, les
   if (live.kind === 'lesson') {
     const lesson = live.current[0];
     className += ' live--lesson';
-    status = live.current.length > 1 ? 'Идут занятия' : 'Сейчас идёт';
+    status = live.current.length > 1 ? 'Идут уроки' : 'Сейчас идёт';
     title = subjectOf(lesson);
     if (live.current.length > 1) title += ` + ещё ${live.current.length - 1}`;
     meta = liveMetaParts(lesson, mode);
@@ -370,7 +371,7 @@ export function liveBannerHTML(live, { mode = 'group', isCurrentWeek = true, les
   } else if (live.kind === 'break') {
     className += ' live--break';
     status = 'Перемена';
-    title = `Следующая пара — ${subjectOf(live.next)}`;
+    title = `Следующий урок — ${subjectOf(live.next)}`;
     meta = liveMetaParts(live.next, mode).slice(1, 4);
     label = 'до звонка';
   } else if (live.kind === 'before') {
@@ -385,7 +386,7 @@ export function liveBannerHTML(live, { mode = 'group', isCurrentWeek = true, les
     title = 'Занятия закончились';
     const next = nextStudyDay(lessons, now.date);
     meta = [
-      `Последняя пара — ${subjectOf(live.previous)}`,
+      `Последний урок — ${subjectOf(live.previous)}`,
       `до ${live.previous.endTime}`,
       next ? `Следующий учебный день — ${formatDateFull(next.date)}` : '',
     ].filter(Boolean);
@@ -397,7 +398,7 @@ export function liveBannerHTML(live, { mode = 'group', isCurrentWeek = true, les
     const weekend = [6, 7].includes(isoWeekday(now.date));
     title = weekend ? 'Сегодня выходной' : 'Сегодня занятий нет';
     meta = next
-      ? [`Ближайшие пары — ${formatDateFull(next.date)}`, `${next.lessons.length} ${pluralRu(next.lessons.length, ['пара', 'пары', 'пар'])}`]
+      ? [`Ближайшие уроки — ${formatDateFull(next.date)}`, `${next.lessons.length} ${pluralRu(next.lessons.length, ['урок', 'урока', 'уроков'])}`]
       : ['Хорошего дня!'];
     showTime = false;
   }
@@ -433,7 +434,7 @@ export function liveBannerHTML(live, { mode = 'group', isCurrentWeek = true, les
 }
 
 /* ------------------------------------------------------------------ */
-/* Пары и неделя                                                       */
+/* Уроки и неделя                                                      */
 /* ------------------------------------------------------------------ */
 
 function lessonCardHTML(lesson, { mode = 'group', liveIds = new Set(), today = false } = {}) {
@@ -493,7 +494,7 @@ function dayColumnHTML(dateKey, lessons, { mode, liveIds, mobileDay }) {
             ? sortLessons(lessons)
                 .map((lesson) => lessonCardHTML(lesson, { mode, liveIds, today: isToday }))
                 .join('')
-            : `<div class="empty-day">${icon('inbox')}<span>Нет пар</span></div>`
+            : `<div class="empty-day">${icon('inbox')}<span>Нет уроков</span></div>`
         }
       </div>
     </section>
@@ -511,7 +512,7 @@ function dayTabsHTML(dates, lessons, { mobileDay, mode }) {
             <button class="day-tab ${dateKey === mobileDay ? 'is-active' : ''} ${dateKey === now.date ? 'is-today' : ''}" type="button" role="tab" aria-selected="${dateKey === mobileDay}" data-day-tab="${dateKey}">
               <span class="day-tab__name">${e(weekdayShort(dateKey, true))}</span>
               <span class="day-tab__date">${dayNumber(dateKey)}</span>
-              <span class="day-tab__count">${count ? `${count} ${pluralRu(count, ['пара', 'пары', 'пар'])}` : '—'}</span>
+              <span class="day-tab__count">${count ? `${count} ${pluralRu(count, ['урок', 'урока', 'уроков'])}` : '—'}</span>
             </button>
           `;
         })
@@ -930,21 +931,343 @@ export function teacherScheduleView(state) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Карта кабинетов                                                     */
+/* ------------------------------------------------------------------ */
+
+const MAP_STATUS_LABEL = {
+  busy: 'Занят',
+  free: 'Свободен',
+  'no-data': 'Нет данных',
+  unknown: 'Нет данных',
+};
+
+function roomLabel(room) {
+  const raw = Array.isArray(room.label) ? room.label.join(' ') : room.label;
+  return raw.startsWith('№') ? `Каб. ${raw}` : raw;
+}
+
+function roomStatusData(data, roomId) {
+  return data && data.rooms ? data.rooms[roomId] || null : null;
+}
+
+function statusClass(status) {
+  return ['busy', 'free', 'no-data'].includes(status) ? status : 'unknown';
+}
+
+function mapRoomLabel(room, fontSize) {
+  const lines = Array.isArray(room.label) ? room.label : [room.label];
+  const cx = room.x + room.w / 2;
+  const cy = room.y + room.h / 2;
+  const size = room.smallText ? 10 : fontSize;
+
+  if (room.vertical && !Array.isArray(room.label)) {
+    return `<text class="map-room__label" x="${cx}" y="${cy}" font-size="${size}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${cx} ${cy})">${e(
+      lines[0]
+    )}</text>`;
+  }
+
+  if (lines.length === 1) {
+    return `<text class="map-room__label" x="${cx}" y="${cy}" font-size="${size}" text-anchor="middle" dominant-baseline="middle">${e(
+      lines[0]
+    )}</text>`;
+  }
+
+  const startY = cy - ((lines.length - 1) * 13) / 2;
+  return `<text class="map-room__label" x="${cx}" y="${startY}" font-size="${size}" text-anchor="middle" dominant-baseline="middle">${lines
+    .map((line, index) => `<tspan x="${cx}" dy="${index === 0 ? 0 : 14}">${e(line)}</tspan>`)
+    .join('')}</text>`;
+}
+
+function mapDecor(item) {
+  if (item.type === 'stairs') {
+    let lines = '';
+    for (let index = 1; index < 7; index += 1) {
+      const y = item.y + (item.h / 7) * index;
+      lines += `<line x1="${item.x + 10}" y1="${y}" x2="${item.x + item.w - 10}" y2="${y}" />`;
+    }
+    return `<g class="map-stairs"><rect x="${item.x}" y="${item.y}" width="${item.w}" height="${item.h}" />${lines}</g>`;
+  }
+  if (item.type === 'void') {
+    return `<rect class="map-void" x="${item.x}" y="${item.y}" width="${item.w}" height="${item.h}" />`;
+  }
+  if (item.type === 'entrance') {
+    return `<g class="map-entrance"><rect x="${item.x}" y="${item.y}" width="${item.w}" height="${item.h}" /><text x="${
+      item.x + item.w / 2
+    }" y="${item.y + item.h / 2}" text-anchor="middle" dominant-baseline="middle">ВХОД</text><rect x="${
+      item.x + item.w / 2 - 22
+    }" y="${item.y + item.h + 4}" width="44" height="7" /></g>`;
+  }
+  if (item.type === 'small') {
+    const cx = item.x + item.w / 2;
+    const cy = item.y + item.h / 2;
+    return `<g class="map-small"><rect x="${item.x}" y="${item.y}" width="${item.w}" height="${item.h}" /><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle">${e(
+      item.label
+    )}</text></g>`;
+  }
+  if (item.type === 'divider') {
+    const cx = item.x + item.w / 2;
+    const cy = item.y + item.h / 2;
+    return `<g class="map-divider"><rect x="${item.x}" y="${item.y}" width="${item.w}" height="${item.h}" /><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${cx} ${cy})">${e(
+      item.label
+    )}</text></g>`;
+  }
+  return '';
+}
+
+function mapSVG(floor, data, selectedRoom) {
+  const decor = (floor.decor || []).map(mapDecor).join('');
+  const rooms = floor.rooms
+    .map((room) => {
+      const status = roomStatusData(data, room.id);
+      const statusKey = statusClass(status ? status.status : 'unknown');
+      const isSelected = room.id === selectedRoom;
+      const label = roomLabel(room);
+      const aria = `${label}: ${MAP_STATUS_LABEL[statusKey] || 'Нет данных'}`;
+      const dotX = room.x + room.w - 8;
+      const dotY = room.y + 8;
+      return `<g class="map-room is-${statusKey} ${isSelected ? 'is-selected' : ''}" data-room-id="${room.id}" tabindex="0" role="button" aria-label="${e(
+        aria
+      )}" aria-pressed="${isSelected}">
+        <title>${e(label)} · ${e(MAP_STATUS_LABEL[statusKey] || 'Нет данных')}</title>
+        <rect x="${room.x}" y="${room.y}" width="${room.w}" height="${room.h}" />
+        <circle class="map-room__dot" cx="${dotX}" cy="${dotY}" r="3.4" />
+        ${mapRoomLabel(room, room.vertical ? 12 : 13)}
+      </g>`;
+    })
+    .join('');
+
+  return `<svg class="map-svg" viewBox="0 0 1000 560" role="img" aria-label="Схема кабинетов: ${e(
+    floor.title
+  )}">
+    <rect class="map-shell" x="50" y="30" width="900" height="500" rx="5" />
+    ${decor}
+    ${rooms}
+  </svg>`;
+}
+
+function mapDateLabel(dateKey) {
+  const now = collegeNow();
+  if (dateKey === now.date) return 'Сегодня';
+  if (dateKey === addDays(now.date, 1)) return 'Завтра';
+  return `${weekdayShort(dateKey)}, ${formatDateLong(dateKey)}`;
+}
+
+function mapLessonHTML(lesson) {
+  const groups = (lesson.groups || [])
+    .map(
+      (group) =>
+        `<a class="room-group" href="#/group/${encodeURIComponent(group.name)}/${startOfWeek(
+          lesson.date
+        )}">${e(group.name)}</a>`
+    )
+    .join(', ');
+  const teachers = (lesson.teachers || []).map((teacher) => shortPerson(teacher.fio)).join(', ');
+  return `<div class="room-lesson">
+    <div class="room-lesson__time">${e(mapDateLabel(lesson.date))} · ${e(lesson.startTime)}–${e(
+      lesson.endTime
+    )} · ${e(lesson.lessonNumber)} урок</div>
+    <h4 class="room-lesson__subject">${e(lesson.subject)}</h4>
+    ${groups ? `<p class="room-lesson__groups">${groups}</p>` : ''}
+    ${teachers ? `<p class="room-lesson__teacher">${e(teachers)}</p>` : ''}
+    ${lesson.replacement ? `<span class="room-lesson__badge">${e(lesson.replacement)}</span>` : ''}
+  </div>`;
+}
+
+function roomPanelLoadingHTML(floor, room) {
+  return `<div class="map-panel__head">
+      <div>
+        <div class="eyebrow">${e(floor.title)}</div>
+        <h2>${e(roomLabel(room))}</h2>
+        <p>Загружаем данные о занятиях…</p>
+      </div>
+    </div>
+    <div class="map-panel__note">${icon('clock')}<p>Проверяем, свободен ли кабинет и когда в нём следующий урок.</p></div>`;
+}
+
+function roomPanelHTML(floor, room, status) {
+  if (!room) {
+    return `<div class="map-panel__empty">
+      ${icon('map')}
+      <h3>Выберите кабинет</h3>
+      <p>Нажмите на комнату на схеме или на номер ниже — покажем, свободен ли кабинет и когда в нём следующий урок.</p>
+    </div>`;
+  }
+
+  const statusKey = statusClass(status ? status.status : 'unknown');
+  const statusLabel = MAP_STATUS_LABEL[statusKey] || 'Нет данных';
+  const cabinet = (status && status.cabinet) || room.cabinet || '';
+  const current = (status && status.current) || [];
+  const next = status && status.next;
+
+  return `<div class="map-panel__head">
+      <div>
+        <div class="eyebrow">${e(floor.title)}</div>
+        <h2>${e(roomLabel(room))}</h2>
+        <p>${cabinet ? e(cabinet) : 'Кабинет вне расписания'}</p>
+      </div>
+      <span class="status-pill is-${statusKey}"><span class="status-pill__dot"></span>${e(
+        statusLabel
+      )}</span>
+    </div>
+
+    ${
+      statusKey === 'no-data'
+        ? `<div class="map-panel__note">${icon('inbox')}<p>${
+            status && status.note
+              ? e(status.note)
+              : 'Для этого кабинета нет данных о занятиях в расписании.'
+          }</p></div>`
+        : ''
+    }
+
+    ${
+      current.length
+        ? `<div class="room-section">
+             <div class="room-section__title">${icon('clock')} Сейчас идёт</div>
+             ${current.map(mapLessonHTML).join('')}
+           </div>`
+        : statusKey === 'free'
+          ? `<div class="room-section">
+               <div class="room-section__title">${icon('clock')} Сейчас</div>
+               <p class="room-free">Кабинет свободен</p>
+             </div>`
+          : ''
+    }
+
+    ${
+      statusKey !== 'no-data'
+        ? `<div class="room-section">
+             <div class="room-section__title">${icon('calendar')} Ближайший урок</div>
+             ${
+               next
+                 ? mapLessonHTML(next)
+                 : `<p class="map-panel__muted">${
+                     status && status.note
+                       ? e(status.note)
+                       : 'На ближайшие дни уроков нет'
+                   }</p>`
+             }
+           </div>`
+        : ''
+    }`;
+}
+
+function floorTabsHTML(currentFloor) {
+  return `<div class="floor-tabs" role="tablist" aria-label="Этажи">
+    ${FLOORS.map(
+      (floor) =>
+        `<button class="floor-tab ${floor.floor === currentFloor ? 'is-active' : ''}" type="button" role="tab" aria-selected="${
+          floor.floor === currentFloor
+        }" data-floor="${floor.floor}">
+          <span class="floor-tab__num">${floor.floor}</span>
+          <span>этаж</span>
+        </button>`
+    ).join('')}
+  </div>`;
+}
+
+function roomChipsHTML(floor, data, selectedRoom) {
+  return `<div class="map-chips">
+    ${floor.rooms
+      .map((room) => {
+        const status = roomStatusData(data, room.id);
+        const statusKey = statusClass(status ? status.status : 'unknown');
+        return `<button class="room-chip is-${statusKey} ${
+          room.id === selectedRoom ? 'is-active' : ''
+        }" type="button" data-room-id="${room.id}">
+          <span class="room-chip__dot"></span>${e(roomLabel(room))}
+        </button>`;
+      })
+      .join('')}
+  </div>`;
+}
+
+export function mapView(state) {
+  const map = state.map || { floor: 1, data: {}, selectedRoom: null };
+  const floor = getFloor(map.floor);
+  const data = map.data ? map.data[floor.floor] : null;
+  const selectedRoom = map.selectedRoom
+    ? floor.rooms.find((room) => room.id === map.selectedRoom)
+    : null;
+  const selectedStatus = selectedRoom ? roomStatusData(data, selectedRoom.id) : null;
+  const loading = map.loading && !data;
+  const error = map.error && !data;
+
+  return `
+    <div class="page-head">
+      <div>
+        <div class="eyebrow">${e(state.meta.institution.shortName)} · корпус</div>
+        <h1 class="page-head__title">Карта кабинетов</h1>
+        <p class="page-head__sub">
+          ${data ? e(data.building || '2 здание') : '2 здание'}
+          <span class="dot" aria-hidden="true"></span>
+          <span>Нажмите на кабинет на схеме или ниже</span>
+        </p>
+      </div>
+      <div class="page-head__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-map-refresh>
+          ${icon('refresh')} Обновить
+        </button>
+      </div>
+    </div>
+
+    ${floorTabsHTML(floor.floor)}
+
+    ${
+      error
+        ? errorView(map.error)
+        : `<div class="map-layout">
+             <section class="map-card">
+               <div class="map-card__head">
+                 <div>
+                   <h2>Схема кабинетов · ${e(floor.title)}</h2>
+                   <p>${data ? `Обновлено в ${e(data.now)}` : 'Загружаем занятость…'}</p>
+                 </div>
+                 <div class="map-legend">
+                   <span><i class="legend-dot is-free"></i>Свободен</span>
+                   <span><i class="legend-dot is-busy"></i>Занят</span>
+                   <span><i class="legend-dot is-no-data"></i>Нет данных</span>
+                 </div>
+               </div>
+               ${
+                 loading
+                   ? `<div class="map-skeleton"><div class="skeleton"></div></div>`
+                   : `<div class="map-canvas">${mapSVG(floor, data, map.selectedRoom)}</div>
+                      <p class="map-scroll-hint">Схему можно прокручивать вбок ${icon('arrow-right')}</p>`
+               }
+               ${roomChipsHTML(floor, data, map.selectedRoom)}
+             </section>
+             <aside class="map-panel">${
+               selectedRoom && !data
+                 ? roomPanelLoadingHTML(floor, selectedRoom)
+                 : roomPanelHTML(floor, selectedRoom, selectedStatus)
+             }</aside>
+           </div>`
+    }
+  `;
+}
+
+/* ------------------------------------------------------------------ */
 /* Футер                                                               */
 /* ------------------------------------------------------------------ */
 
 export function footerHTML(state) {
+  const mapData = state.map ? state.map.data[state.map.floor] : null;
   const stamp =
     state.route.name === 'schedule' && state.schedule?.fetchedAt
       ? state.schedule.fetchedAt
       : state.route.name === 'teacher' && state.teacherSchedule?.fetchedAt
         ? state.teacherSchedule.fetchedAt
-        : state.meta?.updatedAt;
+        : state.route.name === 'map' && mapData?.updatedAt
+          ? mapData.updatedAt
+          : state.meta?.updatedAt;
   const updated = formatUpdated(stamp);
   const label =
-    state.route.name === 'schedule' || state.route.name === 'teacher'
-      ? 'Расписание обновлено'
-      : 'Справочник обновлён';
+    state.route.name === 'map'
+      ? 'Карта обновлена'
+      : state.route.name === 'schedule' || state.route.name === 'teacher'
+        ? 'Расписание обновлено'
+        : 'Справочник обновлён';
   return `
     <footer class="footer">
       <div class="footer__left">
