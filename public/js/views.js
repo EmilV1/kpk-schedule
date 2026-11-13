@@ -1327,9 +1327,11 @@ export function footerHTML(state) {
   const label =
     state.route.name === 'map'
       ? 'Карта обновлена'
-      : state.route.name === 'schedule' || state.route.name === 'teacher'
-        ? 'Расписание обновлено'
-        : 'Справочник обновлён';
+      : state.route.name === 'buildings'
+        ? 'Карта кабинетов'
+        : state.route.name === 'schedule' || state.route.name === 'teacher'
+          ? 'Расписание обновлено'
+          : 'Справочник обновлён';
   return `
     <footer class="footer">
       <div class="footer__left">
