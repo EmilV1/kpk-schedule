@@ -2234,6 +2234,24 @@ img {
   color: var(--accent);
 }
 
+.footer__links .footer__feedback {
+  gap: 6px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.footer__links .footer__feedback:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 65%, var(--accent) 12%);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.footer__feedback .icon {
+  width: 14px;
+  height: 14px;
+}
+
 .sync {
   display: inline-flex;
   align-items: center;

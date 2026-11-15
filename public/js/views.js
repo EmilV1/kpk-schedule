@@ -1342,6 +1342,14 @@ export function footerHTML(state) {
         </span>
       </div>
       <div class="footer__links">
+        <a
+          class="btn btn--soft btn--sm footer__feedback"
+          href="https://t.me/schedulekpk_bot"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Написать в Telegram: ошибка или идея"
+          aria-label="Сообщить об ошибке или предложить идею в Telegram"
+        >${icon('send', 'icon--sm')} Ошибка или идея</a>
         <a href="${e(state.meta.publicationUrl)}" target="_blank" rel="noopener noreferrer">Источник расписания ${icon('external', 'icon--sm')}</a>
         <a href="${e(state.meta.sourceUrl)}" target="_blank" rel="noopener noreferrer">Сайт колледжа ${icon('external', 'icon--sm')}</a>
         <button class="btn btn--ghost btn--sm" type="button" data-refresh ${state.syncing ? 'disabled' : ''}>${icon('refresh', 'icon--sm')} Обновить</button>
