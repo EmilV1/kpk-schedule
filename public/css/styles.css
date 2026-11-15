@@ -1047,6 +1047,61 @@ img {
   pointer-events: none;
 }
 
+/* --------------------------------- Окно ----------------------------------- */
+
+.lesson-gap {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 9px 12px;
+  border-radius: 13px;
+  border: 1px dashed color-mix(in srgb, var(--line-strong) 75%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 65%, transparent);
+  color: var(--muted);
+}
+
+.lesson-gap__icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--faint);
+}
+
+.lesson-gap__icon .icon {
+  width: 13px;
+  height: 13px;
+}
+
+.lesson-gap__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.lesson-gap__title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lesson-gap__meta {
+  font-size: 10.5px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* --------------------------------- Пара ----------------------------------- */
 
 .lesson {

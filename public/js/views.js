@@ -501,6 +501,40 @@ function lessonCardHTML(lesson, { mode = 'group', liveIds = new Set(), today = f
   `;
 }
 
+function gapDuration(minutes) {
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  const parts = [];
+  if (hours) parts.push(`${hours} ${pluralRu(hours, ['час', 'часа', 'часов'])}`);
+  if (rest) parts.push(`${rest} мин.`);
+  return parts.join(' ');
+}
+
+function lessonGapHTML(start, end, minutes) {
+  return `
+    <div class="lesson-gap" role="note" aria-label="Окно ${gapDuration(minutes)}">
+      <span class="lesson-gap__icon">${icon('clock')}</span>
+      <span class="lesson-gap__body">
+        <span class="lesson-gap__title">Окно</span>
+        <span class="lesson-gap__meta">${formatTime(start)}–${formatTime(end)} · ${gapDuration(minutes)}</span>
+      </span>
+    </div>
+  `;
+}
+
+function dayLessonsHTML(lessons, options) {
+  const sorted = sortLessons(lessons);
+  const parts = [];
+  sorted.forEach((lesson, index) => {
+    parts.push(lessonCardHTML(lesson, options));
+    const next = sorted[index + 1];
+    if (!next) return;
+    const gap = lessonStart(next) - lessonEnd(lesson);
+    if (gap >= 30) parts.push(lessonGapHTML(lessonEnd(lesson), lessonStart(next), gap));
+  });
+  return parts.join('');
+}
+
 function dayColumnHTML(dateKey, lessons, { mode, liveIds, mobileDay, rooms }) {
   const now = collegeNow();
   const isToday = dateKey === now.date;
@@ -516,9 +550,12 @@ function dayColumnHTML(dateKey, lessons, { mode, liveIds, mobileDay, rooms }) {
       <div class="day-col__body">
         ${
           count
-            ? sortLessons(lessons)
-                .map((lesson) => lessonCardHTML(lesson, { mode, liveIds, today: isToday, rooms }))
-                .join('')
+            ? dayLessonsHTML(lessons, {
+                mode,
+                liveIds,
+                today: isToday,
+                rooms,
+              })
             : `<div class="empty-day">${icon('inbox')}<span>Нет уроков</span></div>`
         }
       </div>
