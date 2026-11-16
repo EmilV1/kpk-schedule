@@ -114,6 +114,20 @@ function peopleFor(lesson, mode) {
   return values.join(', ');
 }
 
+function lessonPeopleHTML(lesson, mode, weekStart) {
+  if (mode === 'teacher') return e(groupNames(lesson).join(', '));
+  const teachers = (lesson.teachers || []).filter((teacher) => teacher.fio);
+  if (!teachers.length) return '';
+  return teachers
+    .map((teacher) => {
+      const name = e(shortPerson(teacher.fio));
+      if (!teacher.id) return name;
+      const week = weekStart ? `/${weekStart}` : '';
+      return `<a class="lesson__teacher-link" href="#/teacher/${teacher.id}${week}" title="Открыть расписание преподавателя">${name}</a>`;
+    })
+    .join(', ');
+}
+
 function cabinetOf(lesson) {
   return (lesson.cabinet && lesson.cabinet.name) || '';
 }
@@ -454,12 +468,15 @@ export function liveBannerHTML(live, { mode = 'group', isCurrentWeek = true, les
 /* Уроки и неделя                                                      */
 /* ------------------------------------------------------------------ */
 
-function lessonCardHTML(lesson, { mode = 'group', liveIds = new Set(), today = false, rooms = null } = {}) {
+function lessonCardHTML(
+  lesson,
+  { mode = 'group', liveIds = new Set(), today = false, rooms = null, weekStart = null } = {}
+) {
   const id = String(lesson.id);
   const isNow = liveIds.has(id);
   const isPast = today && !isNow && lessonEnd(lesson) <= collegeNow().minutes;
   const badge = lessonBadge(lesson);
-  const people = peopleFor(lesson, mode);
+  const people = lessonPeopleHTML(lesson, mode, weekStart);
   const cabinet = cabinetOf(lesson);
   const subject = subjectOf(lesson);
   const time =
@@ -494,7 +511,7 @@ function lessonCardHTML(lesson, { mode = 'group', liveIds = new Set(), today = f
       ${metaRows.length ? `<div class="lesson__meta">${metaRows.join('')}</div>` : ''}
       ${
         people
-          ? `<div class="lesson__teacher">${e(people)}</div>`
+          ? `<div class="lesson__teacher">${people}</div>`
           : `<div class="lesson__teacher lesson__teacher--muted">${mode === 'teacher' ? 'Группа не указана' : 'Преподаватель не указан'}</div>`
       }
     </article>
@@ -535,7 +552,7 @@ function dayLessonsHTML(lessons, options) {
   return parts.join('');
 }
 
-function dayColumnHTML(dateKey, lessons, { mode, liveIds, mobileDay, rooms }) {
+function dayColumnHTML(dateKey, lessons, { mode, liveIds, mobileDay, rooms, weekStart }) {
   const now = collegeNow();
   const isToday = dateKey === now.date;
   const isMobileActive = mobileDay === dateKey;
@@ -555,6 +572,7 @@ function dayColumnHTML(dateKey, lessons, { mode, liveIds, mobileDay, rooms }) {
                 liveIds,
                 today: isToday,
                 rooms,
+                weekStart,
               })
             : `<div class="empty-day">${icon('inbox')}<span>Нет уроков</span></div>`
         }
@@ -673,6 +691,7 @@ export function scheduleView(state) {
                            liveIds,
                            mobileDay,
                            rooms: state.rooms,
+                           weekStart: state.weekStart,
                          })
                        )
                        .join('')}
@@ -984,6 +1003,7 @@ export function teacherScheduleView(state) {
                            liveIds,
                            mobileDay,
                            rooms: state.rooms,
+                           weekStart: state.weekStart,
                          })
                        )
                        .join('')}
@@ -1257,14 +1277,21 @@ export function buildingsView(state) {
     </div>
 
     <div class="building-grid">
-      <button class="building-card is-disabled" type="button" disabled aria-label="1 здание — скоро">
+      <div class="building-card is-soon" role="group" aria-label="1 здание — скоро">
         <span class="building-card__badge">Скоро</span>
         <span class="building-card__icon">${icon('map')}</span>
         <span class="building-card__num">1</span>
         <h2>1 здание</h2>
-        <p>Схема первого здания появится позже</p>
+        <p>Схема первого здания появится позже. Хотите помочь с ней?</p>
+        <a
+          class="building-card__help"
+          href="https://t.me/schedulekpk_bot"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Написать в Telegram, чтобы помочь со схемой 1 здания"
+        >${icon('send', 'icon--sm')} Напишите нам в Telegram</a>
         <span class="building-card__note">В разработке</span>
-      </button>
+      </div>
 
       <a class="building-card is-ready" href="#/map/1">
         <span class="building-card__badge">4 этажа</span>
