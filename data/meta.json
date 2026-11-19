@@ -17,17 +17,18 @@
     "url": null,
     "type": "Spo",
     "fullTeacherFio": false,
+    "teacherPositionDisplay": "None",
     "hideWindowGroups": false,
     "lessonsColumnDirection": false,
     "hideEmptyDay": true,
     "displayCabinets": true,
     "displayTeachers": true,
     "isTeachersView": false,
-    "publishedDate": "2026-11-18T06:11:17.269311Z"
+    "publishedDate": "2026-11-19T06:27:48.179658Z"
   },
   "publicationUrl": "https://site.mstimetables.ru/01a058c16a6e7b1a8b8ae632e9e51329",
   "sourceUrl": "https://edu.tatar.ru/sovetcki/org6264",
-  "updatedAt": "2026-11-18T09:50:45.211Z",
+  "updatedAt": "2026-11-19T09:58:06.334Z",
   "counts": {
     "groups": 61,
     "teachers": 142,
