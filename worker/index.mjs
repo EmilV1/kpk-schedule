@@ -245,7 +245,7 @@ async function handleRooms(request, env, ctx) {
   const fresh = url.searchParams.get('fresh') === '1';
   const cache = caches.default;
   const cacheUrl = new URL(request.url);
-  cacheUrl.search = `?floor=${floor}&date=${now.date}`;
+  cacheUrl.search = `?floor=${floor}&date=${now.date}&v=2`;
   const cacheKey = new Request(cacheUrl.toString(), { method: 'GET' });
 
   if (fresh) {
