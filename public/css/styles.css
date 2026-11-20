@@ -1264,6 +1264,70 @@ img {
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
+.lesson__subgroups {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 1px;
+}
+
+.lesson__subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 7px;
+  border-top: 1px dashed var(--line);
+}
+
+.lesson__subgroup:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.lesson__subgroup-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.lesson__subgroup-label {
+  display: inline-flex;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.lesson__subgroup-cabinet {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 10.5px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lesson__subgroup-cabinet .icon {
+  width: 11px;
+  height: 11px;
+  flex: none;
+}
+
+.lesson__subgroup-cabinet.lesson__room-link .icon:last-child {
+  margin-left: 0;
+}
+
+.lesson__subgroup-teacher {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
 .lesson__live {
   display: none;
   position: absolute;

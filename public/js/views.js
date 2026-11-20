@@ -485,19 +485,7 @@ function lessonCardHTML(
       : `${formatTime(lessonStart(lesson))}–${formatTime(lessonEnd(lesson))}`;
 
   const metaRows = [];
-  if (cabinet) {
-    const room = findRoomForCabinet(rooms, cabinet);
-    metaRows.push(
-      room
-        ? `<a class="lesson__meta-row lesson__room-link" href="#/map/${room.floor}/${room.id}" title="Показать ${e(
-            cabinet
-          )} на карте">${icon('pin')}<span>${e(cabinet)}</span>${icon(
-            'arrow-right',
-            'icon--sm'
-          )}</a>`
-        : `<div class="lesson__meta-row">${icon('pin')}<span>${e(cabinet)}</span></div>`
-    );
-  }
+  if (cabinet) metaRows.push(cabinetRowHTML(cabinet, rooms));
 
   return `
     <article class="lesson ${isNow ? 'is-now' : ''} ${isPast ? 'is-past' : ''}" data-lesson-id="${e(id)}" aria-current="${isNow ? 'true' : 'false'}">
@@ -514,6 +502,132 @@ function lessonCardHTML(
           ? `<div class="lesson__teacher">${people}</div>`
           : `<div class="lesson__teacher lesson__teacher--muted">${mode === 'teacher' ? 'Группа не указана' : 'Преподаватель не указан'}</div>`
       }
+    </article>
+  `;
+}
+
+function subgroupOf(lesson) {
+  return (lesson.unionGroups || []).find((union) => union.subgroup)?.subgroup || null;
+}
+
+function subgroupLabel(lesson) {
+  const subgroup = subgroupOf(lesson);
+  if (!subgroup) return '';
+  const name = (subgroup.name || '').trim();
+  if (/^Группа\s*\d+$/i.test(name)) return name.replace(/^Группа\s*/i, 'Группа ');
+  if (name) return name;
+  return subgroup.order ? `Подгруппа ${subgroup.order}` : 'Подгруппа';
+}
+
+function subgroupKey(lesson) {
+  return [
+    lesson.date,
+    lesson.startTime,
+    lesson.endTime,
+    subjectOf(lesson),
+    lesson.typeLesson?.id || '',
+    lesson.replacementType || '',
+  ].join('|');
+}
+
+function groupDayLessons(lessons, mode = 'group') {
+  const sorted = sortLessons(lessons);
+  if (mode !== 'group') return sorted.map((lesson) => ({ lessons: [lesson] }));
+
+  const grouped = new Map();
+  const items = [];
+  for (const lesson of sorted) {
+    const subgroup = subgroupOf(lesson);
+    if (!subgroup) {
+      items.push({ lessons: [lesson] });
+      continue;
+    }
+    const key = subgroupKey(lesson);
+    let item = grouped.get(key);
+    if (!item) {
+      item = { lessons: [] };
+      grouped.set(key, item);
+      items.push(item);
+    }
+    item.lessons.push(lesson);
+  }
+
+  return items.map((item) => {
+    const subgroupIds = new Set(item.lessons.map((lesson) => subgroupOf(lesson)?.id));
+    return subgroupIds.size >= 2 ? item : { lessons: [item.lessons[0]] };
+  });
+}
+
+function cabinetRowHTML(cabinet, rooms, wrapperClass = 'lesson__meta-row') {
+  if (!cabinet) return '';
+  const room = findRoomForCabinet(rooms, cabinet);
+  if (room) {
+    return `<a class="${wrapperClass} lesson__room-link" href="#/map/${room.floor}/${room.id}" title="Показать ${e(
+      cabinet
+    )} на карте">${icon('pin')}<span>${e(cabinet)}</span>${icon(
+      'arrow-right',
+      'icon--sm'
+    )}</a>`;
+  }
+  return `<div class="${wrapperClass}">${icon('pin')}<span>${e(cabinet)}</span></div>`;
+}
+
+function subgroupLessonCardHTML(
+  lessons,
+  { liveIds = new Set(), today = false, rooms = null, weekStart = null } = {}
+) {
+  const first = lessons[0];
+  const ids = lessons.map((lesson) => String(lesson.id));
+  const isNow = ids.some((id) => liveIds.has(id));
+  const isPast = today && !isNow && lessonEnd(first) <= collegeNow().minutes;
+  const badge = lessonBadge(first);
+  const subject = subjectOf(first);
+  const time =
+    first.startTime && first.endTime
+      ? `${first.startTime}–${first.endTime}`
+      : `${formatTime(lessonStart(first))}–${formatTime(lessonEnd(first))}`;
+
+  const subgroups = lessons
+    .map((lesson) => {
+      const cabinet = cabinetOf(lesson);
+      const room = findRoomForCabinet(rooms, cabinet);
+      const cabinetHTML = cabinet
+        ? room
+          ? `<a class="lesson__subgroup-cabinet lesson__room-link" href="#/map/${room.floor}/${room.id}" title="Показать ${e(
+              cabinet
+            )} на карте">${icon('pin')}<span>${e(cabinet)}</span>${icon(
+              'arrow-right',
+              'icon--sm'
+            )}</a>`
+          : `<span class="lesson__subgroup-cabinet">${icon('pin')}<span>${e(cabinet)}</span></span>`
+        : '';
+      const teacher = lessonPeopleHTML(lesson, 'group', weekStart);
+      return `
+        <div class="lesson__subgroup">
+          <div class="lesson__subgroup-head">
+            <span class="lesson__subgroup-label">${e(subgroupLabel(lesson))}</span>
+            ${cabinetHTML}
+          </div>
+          <div class="lesson__subgroup-teacher">${
+            teacher || 'Преподаватель не указан'
+          }</div>
+        </div>
+      `;
+    })
+    .join('');
+
+  return `
+    <article class="lesson lesson--subgroups ${isNow ? 'is-now' : ''} ${
+      isPast ? 'is-past' : ''
+    }" data-lesson-id="${e(ids[0])}" aria-current="${isNow ? 'true' : 'false'}">
+      <span class="lesson__live">сейчас</span>
+      <div class="lesson__top">
+        <span class="lesson__num">${e(first.lessonNumber || '')}</span>
+        <span class="lesson__time">${e(time)}</span>
+        ${badge ? `<span class="lesson__badge">${e(badge)}</span>` : ''}
+      </div>
+      <h3 class="lesson__subject" title="${e(subject)}">${e(subject)}</h3>
+      <div class="lesson__subgroups">${subgroups}</div>
     </article>
   `;
 }
@@ -540,14 +654,19 @@ function lessonGapHTML(start, end, minutes) {
 }
 
 function dayLessonsHTML(lessons, options) {
-  const sorted = sortLessons(lessons);
+  const items = groupDayLessons(lessons, options.mode);
   const parts = [];
-  sorted.forEach((lesson, index) => {
-    parts.push(lessonCardHTML(lesson, options));
-    const next = sorted[index + 1];
+  items.forEach((item, index) => {
+    const first = item.lessons[0];
+    parts.push(
+      item.lessons.length > 1
+        ? subgroupLessonCardHTML(item.lessons, options)
+        : lessonCardHTML(first, options)
+    );
+    const next = items[index + 1];
     if (!next) return;
-    const gap = lessonStart(next) - lessonEnd(lesson);
-    if (gap >= 30) parts.push(lessonGapHTML(lessonEnd(lesson), lessonStart(next), gap));
+    const gap = lessonStart(next.lessons[0]) - lessonEnd(first);
+    if (gap >= 30) parts.push(lessonGapHTML(lessonEnd(first), lessonStart(next.lessons[0]), gap));
   });
   return parts.join('');
 }
@@ -556,7 +675,7 @@ function dayColumnHTML(dateKey, lessons, { mode, liveIds, mobileDay, rooms, week
   const now = collegeNow();
   const isToday = dateKey === now.date;
   const isMobileActive = mobileDay === dateKey;
-  const count = lessons.length;
+  const count = groupDayLessons(lessons, mode).length;
   return `
     <section class="day-col ${isToday ? 'is-today' : ''} ${isMobileActive ? 'is-mobile-active' : ''}" data-day="${dateKey}">
       <header class="day-col__head">
@@ -587,7 +706,7 @@ function dayTabsHTML(dates, lessons, { mobileDay, mode }) {
     <div class="day-tabs" role="tablist" aria-label="Дни недели">
       ${dates
         .map((dateKey) => {
-          const count = lessonsForDate(lessons, dateKey).length;
+          const count = groupDayLessons(lessonsForDate(lessons, dateKey), mode).length;
           return `
             <button class="day-tab ${dateKey === mobileDay ? 'is-active' : ''} ${dateKey === now.date ? 'is-today' : ''}" type="button" role="tab" aria-selected="${dateKey === mobileDay}" data-day-tab="${dateKey}">
               <span class="day-tab__name">${e(weekdayShort(dateKey, true))}</span>
