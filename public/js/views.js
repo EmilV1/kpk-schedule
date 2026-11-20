@@ -172,6 +172,18 @@ function lessonBadge(lesson) {
   return badges.join(' · ');
 }
 
+function subgroupLessonsBadge(lessons) {
+  const badges = [];
+  if (lessons.some((lesson) => lesson.replacementType && lesson.replacementType !== 'none')) {
+    badges.push('замена');
+  }
+  const types = [
+    ...new Set(lessons.map((lesson) => lesson.typeLesson?.name).filter(Boolean)),
+  ];
+  if (types.length) badges.push(types.join(' · '));
+  return badges.join(' · ');
+}
+
 function scrollToTopIfNeeded() {
   if (window.scrollY > 40) window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -520,14 +532,9 @@ function subgroupLabel(lesson) {
 }
 
 function subgroupKey(lesson) {
-  return [
-    lesson.date,
-    lesson.startTime,
-    lesson.endTime,
-    subjectOf(lesson),
-    lesson.typeLesson?.id || '',
-    lesson.replacementType || '',
-  ].join('|');
+  // Подгруппы могут изучать разные предметы, но начинаются одновременно.
+  // Поэтому объединяем по дате и времени начала урока.
+  return [lesson.date, lesson.startTime].join('|');
 }
 
 function groupDayLessons(lessons, mode = 'group') {
@@ -579,13 +586,16 @@ function subgroupLessonCardHTML(
   const first = lessons[0];
   const ids = lessons.map((lesson) => String(lesson.id));
   const isNow = ids.some((id) => liveIds.has(id));
-  const isPast = today && !isNow && lessonEnd(first) <= collegeNow().minutes;
-  const badge = lessonBadge(first);
-  const subject = subjectOf(first);
+  const endMinute = Math.max(...lessons.map((lesson) => lessonEnd(lesson)));
+  const isPast = today && !isNow && endMinute <= collegeNow().minutes;
+  const badge = subgroupLessonsBadge(lessons);
+  const subjects = new Set(lessons.map((lesson) => subjectOf(lesson)));
+  const differentSubjects = subjects.size > 1;
+  const subject = differentSubjects ? 'По подгруппам' : subjectOf(first);
   const time =
-    first.startTime && first.endTime
-      ? `${first.startTime}–${first.endTime}`
-      : `${formatTime(lessonStart(first))}–${formatTime(lessonEnd(first))}`;
+    first.startTime
+      ? `${first.startTime}–${formatTime(endMinute)}`
+      : `${formatTime(lessonStart(first))}–${formatTime(endMinute)}`;
 
   const subgroups = lessons
     .map((lesson) => {
@@ -608,6 +618,11 @@ function subgroupLessonCardHTML(
             <span class="lesson__subgroup-label">${e(subgroupLabel(lesson))}</span>
             ${cabinetHTML}
           </div>
+          ${
+            differentSubjects
+              ? `<div class="lesson__subgroup-subject">${e(subjectOf(lesson))}</div>`
+              : ''
+          }
           <div class="lesson__subgroup-teacher">${
             teacher || 'Преподаватель не указан'
           }</div>
@@ -658,6 +673,7 @@ function dayLessonsHTML(lessons, options) {
   const parts = [];
   items.forEach((item, index) => {
     const first = item.lessons[0];
+    const itemEnd = Math.max(...item.lessons.map((lesson) => lessonEnd(lesson)));
     parts.push(
       item.lessons.length > 1
         ? subgroupLessonCardHTML(item.lessons, options)
@@ -665,8 +681,9 @@ function dayLessonsHTML(lessons, options) {
     );
     const next = items[index + 1];
     if (!next) return;
-    const gap = lessonStart(next.lessons[0]) - lessonEnd(first);
-    if (gap >= 30) parts.push(lessonGapHTML(lessonEnd(first), lessonStart(next.lessons[0]), gap));
+    const nextStart = lessonStart(next.lessons[0]);
+    const gap = nextStart - itemEnd;
+    if (gap >= 30) parts.push(lessonGapHTML(itemEnd, nextStart, gap));
   });
   return parts.join('');
 }

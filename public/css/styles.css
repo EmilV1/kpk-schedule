@@ -1323,6 +1323,13 @@ img {
   margin-left: 0;
 }
 
+.lesson__subgroup-subject {
+  font-size: 11.5px;
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--text);
+}
+
 .lesson__subgroup-teacher {
   font-size: 11px;
   color: var(--text-soft);
