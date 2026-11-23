@@ -120,6 +120,10 @@
         <path d="m22 2-7 20-4-9-9-4 20-7Z" />
         <path d="M22 2 11 13" />
       </symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24">
+        <rect x="9" y="9" width="11" height="11" rx="2" />
+        <path d="M15 9V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4" />
+      </symbol>
     </svg>
 
     <header class="topbar">
@@ -170,6 +174,23 @@
 
     <div id="modal-root"></div>
     <div id="toast-root" class="toast-root" role="status" aria-live="polite"></div>
+
+    <aside id="share-banner" class="share-banner" aria-label="Поделиться сайтом" hidden>
+      <div class="share-banner__icon" aria-hidden="true">
+        <svg class="icon"><use href="#i-send"></use></svg>
+      </div>
+      <div class="share-banner__text">
+        <strong>Сайт помогает?</strong>
+        <p>Поделись им с друзьями и одногруппниками — пусть у всех будет актуальное расписание.</p>
+      </div>
+      <div class="share-banner__actions">
+        <button class="btn btn--soft btn--sm" type="button" data-share-copy>
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#i-copy"></use></svg>
+          Скопировать ссылку
+        </button>
+        <button class="btn btn--ghost btn--sm" type="button" data-share-close>Ок</button>
+      </div>
+    </aside>
 
     <script type="module" src="/js/app.js"></script>
   </body>

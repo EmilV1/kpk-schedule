@@ -241,11 +241,14 @@ async function handleRooms(request, env, ctx) {
   }
 
   const now = collegeNowParts();
-  const end = addDays(now.date, 3);
+  const requestedDate = url.searchParams.get('date');
+  const date = DATE_RE.test(requestedDate || '') ? requestedDate : now.date;
+  const isToday = date === now.date;
+  const end = isToday ? addDays(date, 3) : date;
   const fresh = url.searchParams.get('fresh') === '1';
   const cache = caches.default;
   const cacheUrl = new URL(request.url);
-  cacheUrl.search = `?floor=${floor}&date=${now.date}&v=2`;
+  cacheUrl.search = `?floor=${floor}&date=${date}&v=3`;
   const cacheKey = new Request(cacheUrl.toString(), { method: 'GET' });
 
   if (fresh) {
@@ -282,7 +285,7 @@ async function handleRooms(request, env, ctx) {
         return { room, cabinet: null, lessons: null, note: 'Кабинет не найден в расписании' };
       }
       try {
-        const data = await fetchCabinetLessons(cabinet.id, now.date, end);
+        const data = await fetchCabinetLessons(cabinet.id, date, end);
         return { room, cabinet, lessons: data.lessons || [], note: '' };
       } catch {
         return { room, cabinet, lessons: null, note: 'Не удалось получить данные' };
@@ -292,13 +295,14 @@ async function handleRooms(request, env, ctx) {
 
   const rooms = {};
   for (const entry of entries) {
-    rooms[entry.room.id] = buildRoomStatus(entry, now);
+    rooms[entry.room.id] = buildRoomStatus(entry, now, date);
   }
 
   const payload = {
     floor,
     building: config.building || '',
-    date: now.date,
+    date,
+    isToday,
     now: now.timeText,
     updatedAt: new Date().toISOString(),
     rooms,
@@ -405,13 +409,17 @@ function lessonEnd(lesson) {
         Number(String(lesson.endTime || '0:0').split(':')[1]);
 }
 
-function buildRoomStatus(entry, now) {
+function buildRoomStatus(entry, now, date = now.date) {
+  const isToday = date === now.date;
   const base = {
     cabinet: entry.room.cabinet || null,
     cabinetId: entry.cabinet ? entry.cabinet.id : null,
     status: 'no-data',
+    date,
+    isToday,
     current: [],
     next: null,
+    lessons: [],
     note: entry.note || '',
   };
 
@@ -423,6 +431,16 @@ function buildRoomStatus(entry, now) {
     if (a.date !== b.date) return a.date < b.date ? -1 : 1;
     return lessonStart(a) - lessonStart(b);
   });
+
+  const dayLessons = lessons.filter((lesson) => lesson.date === date);
+  if (!isToday) {
+    return {
+      ...base,
+      status: dayLessons.length ? 'scheduled' : 'free',
+      lessons: dayLessons.map(summarizeLesson),
+      note: dayLessons.length ? '' : 'На этот день уроков нет',
+    };
+  }
 
   const current = lessons.filter(
     (lesson) =>
@@ -455,6 +473,7 @@ function buildRoomStatus(entry, now) {
     status: current.length ? 'busy' : 'free',
     current: current.map(summarizeLesson),
     next: next ? summarizeLesson(next) : null,
+    lessons: dayLessons.map(summarizeLesson),
     note: !next
       ? current.length
         ? 'На ближайшие дни уроков больше нет'

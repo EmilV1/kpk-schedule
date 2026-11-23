@@ -15,6 +15,7 @@ import {
   dayNumber,
   formatCountdown,
   formatDateFull,
+  formatDateLong,
   formatRange,
   formatTime,
   isoWeekday,
@@ -1157,6 +1158,7 @@ export function teacherScheduleView(state) {
 const MAP_STATUS_LABEL = {
   busy: 'Занят',
   free: 'Свободен',
+  scheduled: 'Есть уроки',
   'no-data': 'Нет данных',
   unknown: 'Нет данных',
 };
@@ -1171,7 +1173,7 @@ function roomStatusData(data, roomId) {
 }
 
 function statusClass(status) {
-  return ['busy', 'free', 'no-data'].includes(status) ? status : 'unknown';
+  return ['busy', 'free', 'scheduled', 'no-data'].includes(status) ? status : 'unknown';
 }
 
 function mapRoomLabel(room, fontSize) {
@@ -1220,7 +1222,8 @@ function mapDecor(item) {
   if (item.type === 'small') {
     const cx = item.x + item.w / 2;
     const cy = item.y + item.h / 2;
-    return `<g class="map-small"><rect x="${item.x}" y="${item.y}" width="${item.w}" height="${item.h}" /><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle">${e(
+    const tone = item.tone ? ` is-${item.tone}` : '';
+    return `<g class="map-small${tone}"><rect x="${item.x}" y="${item.y}" width="${item.w}" height="${item.h}" /><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle">${e(
       item.label
     )}</text></g>`;
   }
@@ -1245,7 +1248,8 @@ function mapSVG(floor, data, selectedRoom) {
       const aria = `${label}: ${MAP_STATUS_LABEL[statusKey] || 'Нет данных'}`;
       const dotX = room.x + room.w - 8;
       const dotY = room.y + 8;
-      return `<g class="map-room is-${statusKey} ${isSelected ? 'is-selected' : ''}" data-room-id="${room.id}" tabindex="0" role="button" aria-label="${e(
+      const tone = room.tone ? `is-tone-${room.tone}` : '';
+      return `<g class="map-room is-${statusKey} ${isSelected ? 'is-selected' : ''} ${tone}" data-room-id="${room.id}" tabindex="0" role="button" aria-label="${e(
         aria
       )}" aria-pressed="${isSelected}">
         <title>${e(label)} · ${e(MAP_STATUS_LABEL[statusKey] || 'Нет данных')}</title>
@@ -1293,23 +1297,23 @@ function mapLessonHTML(lesson) {
   </div>`;
 }
 
-function roomPanelLoadingHTML(floor, room) {
+function roomPanelLoadingHTML(floor, room, date) {
   return `<div class="map-panel__head">
       <div>
         <div class="eyebrow">${e(floor.title)}</div>
         <h2>${e(roomLabel(room))}</h2>
-        <p>Загружаем данные о занятиях…</p>
+        <p>${e(mapDateLabel(date))} · загружаем данные…</p>
       </div>
     </div>
-    <div class="map-panel__note">${icon('clock')}<p>Проверяем, свободен ли кабинет и когда в нём следующий урок.</p></div>`;
+    <div class="map-panel__note">${icon('clock')}<p>Проверяем расписание кабинета на выбранный день.</p></div>`;
 }
 
-function roomPanelHTML(floor, room, status) {
+function roomPanelHTML(floor, room, status, date) {
   if (!room) {
     return `<div class="map-panel__empty">
       ${icon('map')}
       <h3>Выберите кабинет</h3>
-      <p>Нажмите на комнату на схеме или на номер ниже — покажем, свободен ли кабинет и когда в нём следующий урок.</p>
+      <p>Нажмите на комнату на схеме или на номер ниже — покажем расписание кабинета на выбранный день.</p>
     </div>`;
   }
 
@@ -1318,28 +1322,46 @@ function roomPanelHTML(floor, room, status) {
   const cabinet = (status && status.cabinet) || room.cabinet || '';
   const current = (status && status.current) || [];
   const next = status && status.next;
+  const dayLessons = (status && status.lessons) || [];
+  const isToday = status ? status.isToday !== false : date === collegeNow().date;
+  const dateLabel = mapDateLabel((status && status.date) || date);
 
-  return `<div class="map-panel__head">
+  const head = `<div class="map-panel__head">
       <div>
         <div class="eyebrow">${e(floor.title)}</div>
         <h2>${e(roomLabel(room))}</h2>
-        <p>${cabinet ? e(cabinet) : 'Кабинет вне расписания'}</p>
+        <p>${cabinet ? e(cabinet) : 'Кабинет вне расписания'} <span class="dot" aria-hidden="true"></span> ${e(
+          dateLabel
+        )}</p>
       </div>
       <span class="status-pill is-${statusKey}"><span class="status-pill__dot"></span>${e(
         statusLabel
       )}</span>
-    </div>
+    </div>`;
 
-    ${
-      statusKey === 'no-data'
-        ? `<div class="map-panel__note">${icon('inbox')}<p>${
-            status && status.note
-              ? e(status.note)
-              : 'Для этого кабинета нет данных о занятиях в расписании.'
-          }</p></div>`
-        : ''
-    }
+  const noData = `<div class="map-panel__note">${icon('inbox')}<p>${
+    status && status.note
+      ? e(status.note)
+      : 'Для этого кабинета нет данных о занятиях в расписании.'
+  }</p></div>`;
 
+  if (statusKey === 'no-data') return head + noData;
+
+  if (!isToday) {
+    return `${head}
+      <div class="room-section">
+        <div class="room-section__title">${icon('calendar')} ${e(dateLabel)}</div>
+        ${
+          dayLessons.length
+            ? dayLessons.map(mapLessonHTML).join('')
+            : `<p class="map-panel__muted">${
+                status && status.note ? e(status.note) : 'На этот день уроков нет'
+              }</p>`
+        }
+      </div>`;
+  }
+
+  return `${head}
     ${
       current.length
         ? `<div class="room-section">
@@ -1383,6 +1405,31 @@ function floorTabsHTML(currentFloor) {
           <span>этаж</span>
         </button>`
     ).join('')}
+  </div>`;
+}
+
+function mapDatesHTML(selectedDate) {
+  const now = collegeNow();
+  const dates = Array.from({ length: 7 }, (_, index) => addDays(now.date, index));
+  return `<div class="map-dates" role="tablist" aria-label="Дата расписания кабинетов">
+    ${dates
+      .map((date) => {
+        const name =
+          date === now.date
+            ? 'Сегодня'
+            : date === addDays(now.date, 1)
+              ? 'Завтра'
+              : weekdayShort(date, true);
+        return `<button class="map-date ${
+          date === selectedDate ? 'is-active' : ''
+        }" type="button" role="tab" aria-selected="${date === selectedDate}" data-map-date="${date}" aria-label="${e(
+          mapDateLabel(date)
+        )}">
+          <span class="map-date__name">${e(name)}</span>
+          <span class="map-date__num">${dayNumber(date)}</span>
+        </button>`;
+      })
+      .join('')}
   </div>`;
 }
 
@@ -1442,9 +1489,11 @@ export function buildingsView(state) {
 }
 
 export function mapView(state) {
-  const map = state.map || { floor: 1, data: {}, selectedRoom: null };
+  const map = state.map || { floor: 1, date: null, data: {}, selectedRoom: null };
   const floor = getFloor(map.floor);
-  const data = map.data ? map.data[floor.floor] : null;
+  const date = map.date || collegeNow().date;
+  const dataKey = `${floor.floor}:${date}`;
+  const data = map.data ? map.data[dataKey] : null;
   const selectedRoom = map.selectedRoom
     ? floor.rooms.find((room) => room.id === map.selectedRoom)
     : null;
@@ -1463,7 +1512,7 @@ export function mapView(state) {
         <p class="page-head__sub">
           ${data ? e(data.building || '2 здание') : '2 здание'}
           <span class="dot" aria-hidden="true"></span>
-          <span>Нажмите на кабинет на схеме или ниже</span>
+          <span>${e(mapDateLabel(date))}</span>
         </p>
       </div>
       <div class="page-head__actions">
@@ -1474,6 +1523,7 @@ export function mapView(state) {
     </div>
 
     ${floorTabsHTML(floor.floor)}
+    ${mapDatesHTML(date)}
 
     ${
       error
@@ -1483,11 +1533,12 @@ export function mapView(state) {
                <div class="map-card__head">
                  <div>
                    <h2>Схема кабинетов · ${e(floor.title)}</h2>
-                   <p>${data ? `Обновлено в ${e(data.now)}` : 'Загружаем занятость…'}</p>
+                   <p>${data ? `${e(mapDateLabel(date))} · обновлено в ${e(data.now)}` : 'Загружаем расписание…'}</p>
                  </div>
                  <div class="map-legend">
                    <span><i class="legend-dot is-free"></i>Свободен</span>
                    <span><i class="legend-dot is-busy"></i>Занят</span>
+                   <span><i class="legend-dot is-scheduled"></i>Есть уроки</span>
                    <span><i class="legend-dot is-no-data"></i>Нет данных</span>
                  </div>
                </div>
@@ -1501,8 +1552,8 @@ export function mapView(state) {
              </section>
              <aside class="map-panel">${
                selectedRoom && !data
-                 ? roomPanelLoadingHTML(floor, selectedRoom)
-                 : roomPanelHTML(floor, selectedRoom, selectedStatus)
+                 ? roomPanelLoadingHTML(floor, selectedRoom, date)
+                 : roomPanelHTML(floor, selectedRoom, selectedStatus, date)
              }</aside>
            </div>`
     }
@@ -1514,7 +1565,8 @@ export function mapView(state) {
 /* ------------------------------------------------------------------ */
 
 export function footerHTML(state) {
-  const mapData = state.map ? state.map.data[state.map.floor] : null;
+  const mapDate = state.map?.date || collegeNow().date;
+  const mapData = state.map ? state.map.data[`${state.map.floor}:${mapDate}`] : null;
   const stamp =
     state.route.name === 'schedule' && state.schedule?.fetchedAt
       ? state.schedule.fetchedAt

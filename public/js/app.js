@@ -53,6 +53,7 @@ const state = {
   teacherLiveWeekStart: null,
   map: {
     floor: 1,
+    date: null,
     selectedRoom: null,
     data: {},
     loadedAt: {},
@@ -355,9 +356,11 @@ async function ensureTeacherLive(token) {
   }
 }
 
-async function loadRooms(floor, { fresh = false, silent = false } = {}) {
-  const existing = state.map.data[floor];
-  if (!fresh && existing && Date.now() - (state.map.loadedAt[floor] || 0) < 120_000) {
+async function loadRooms(floor, { fresh = false, silent = false, date = state.map.date } = {}) {
+  const targetDate = date || collegeNow().date;
+  const key = `${floor}:${targetDate}`;
+  const existing = state.map.data[key];
+  if (!fresh && existing && Date.now() - (state.map.loadedAt[key] || 0) < 120_000) {
     return;
   }
 
@@ -367,16 +370,28 @@ async function loadRooms(floor, { fresh = false, silent = false } = {}) {
   if (!silent) render();
 
   try {
-    const data = await api.rooms(floor, { fresh });
+    const data = await api.rooms(floor, { fresh, date: targetDate });
     if (request !== mapRequest) return;
-    if (state.route.name !== 'map' || state.map.floor !== floor) return;
-    state.map.data[floor] = data;
-    state.map.loadedAt[floor] = Date.now();
+    if (
+      state.route.name !== 'map' ||
+      state.map.floor !== floor ||
+      (state.map.date || collegeNow().date) !== targetDate
+    ) {
+      return;
+    }
+    state.map.data[key] = data;
+    state.map.loadedAt[key] = Date.now();
     state.map.loading = false;
     render();
   } catch (err) {
     if (request !== mapRequest) return;
-    if (state.route.name !== 'map' || state.map.floor !== floor) return;
+    if (
+      state.route.name !== 'map' ||
+      state.map.floor !== floor ||
+      (state.map.date || collegeNow().date) !== targetDate
+    ) {
+      return;
+    }
     state.map.loading = false;
     state.map.error = err.message || 'Не удалось загрузить карту';
     render();
@@ -469,11 +484,12 @@ async function applyRoute() {
   if (route.name === 'map') {
     state.route = { name: 'map' };
     if ([1, 2, 3, 4].includes(route.floor)) state.map.floor = route.floor;
+    state.map.date = state.map.date || collegeNow().date;
     state.map.selectedRoom = route.room || null;
     state.map.error = null;
     render();
     window.scrollTo({ top: 0, behavior: 'auto' });
-    await loadRooms(state.map.floor);
+    await loadRooms(state.map.floor, { date: state.map.date });
     return;
   }
 
@@ -717,6 +733,66 @@ function showToast(message, type = 'info') {
   }, 3200);
 }
 
+const SHARE_DISMISSED_KEY = 'kpk:share-dismissed-at';
+const SHARE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+function copyShareLink() {
+  const link = `${location.origin}/`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(link).then(
+      () => true,
+      () => fallbackCopy(link)
+    );
+  }
+  return Promise.resolve(fallbackCopy(link));
+}
+
+function fallbackCopy(text) {
+  const area = document.createElement('textarea');
+  area.value = text;
+  area.setAttribute('readonly', '');
+  area.style.position = 'fixed';
+  area.style.opacity = '0';
+  document.body.appendChild(area);
+  area.select();
+  let copied = false;
+  try {
+    copied = document.execCommand('copy');
+  } catch {
+    copied = false;
+  }
+  area.remove();
+  return copied;
+}
+
+function setupShareBanner() {
+  const banner = $('#share-banner');
+  if (!banner) return;
+  const dismissedAt = Number(storage.get(SHARE_DISMISSED_KEY, 0)) || 0;
+  if (Date.now() - dismissedAt < SHARE_TTL_MS) return;
+
+  banner.hidden = false;
+  requestAnimationFrame(() => banner.classList.add('is-visible'));
+
+  const copyButton = banner.querySelector('[data-share-copy]');
+  const closeButton = banner.querySelector('[data-share-close]');
+
+  copyButton?.addEventListener('click', async () => {
+    const copied = await copyShareLink();
+    showToast(copied ? 'Ссылка скопирована' : 'Не удалось скопировать ссылку', copied ? 'info' : 'error');
+  });
+
+  closeButton?.addEventListener('click', () => {
+    storage.set(SHARE_DISMISSED_KEY, Date.now());
+    banner.classList.remove('is-visible');
+    banner.classList.add('is-hiding');
+    setTimeout(() => {
+      banner.hidden = true;
+      banner.classList.remove('is-hiding');
+    }, 220);
+  });
+}
+
 /* ------------------------------------------------------------------ */
 /* Живой таймер                                                        */
 /* ------------------------------------------------------------------ */
@@ -859,6 +935,19 @@ function onDocumentClick(event) {
     }
     for (const column of $$('.day-col')) {
       column.classList.toggle('is-mobile-active', column.dataset.day === state.mobileDay);
+    }
+    return;
+  }
+
+  const dateButton = target.closest('[data-map-date]');
+  if (dateButton) {
+    const date = dateButton.dataset.mapDate;
+    if (date && date !== state.map.date) {
+      state.map.date = date;
+      state.map.selectedRoom = null;
+      state.map.error = null;
+      render();
+      loadRooms(state.map.floor, { date });
     }
     return;
   }
@@ -1052,6 +1141,7 @@ function retryData() {
 
 async function init() {
   applyTheme(currentTheme());
+  setupShareBanner();
   render();
 
   try {

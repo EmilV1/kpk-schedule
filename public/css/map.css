@@ -201,6 +201,82 @@
   display: none;
 }
 
+.map-dates {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: min(100%, 720px);
+  margin: -6px 0 18px;
+  padding: 4px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.map-dates::-webkit-scrollbar {
+  display: none;
+}
+
+.map-date {
+  flex: 1 1 0;
+  min-width: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.map-date:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.map-date.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.map-date__name {
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.map-date__num {
+  font-size: 14px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+@media (max-width: 760px) {
+  .map-dates {
+    margin-top: -8px;
+  }
+
+  .map-date {
+    min-width: 0;
+    padding-left: 1px;
+    padding-right: 1px;
+  }
+
+  .map-date__name {
+    font-size: 9.5px;
+  }
+}
+
 .floor-tab {
   display: inline-flex;
   align-items: center;
@@ -319,6 +395,12 @@
   background: #ef4444;
 }
 
+.legend-dot.is-scheduled,
+.room-chip.is-scheduled .room-chip__dot,
+.status-pill.is-scheduled .status-pill__dot {
+  background: #d97706;
+}
+
 .legend-dot.is-no-data,
 .room-chip.is-no-data .room-chip__dot,
 .room-chip.is-unknown .room-chip__dot,
@@ -400,6 +482,33 @@
   font-weight: 550;
 }
 
+.map-small.is-male rect {
+  fill: #eff6ff;
+  stroke: #93c5fd;
+}
+
+.map-small.is-male text {
+  fill: #2563eb;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.map-small.is-female rect {
+  fill: #fdf2f8;
+  stroke: #f9a8d4;
+}
+
+.map-small.is-female text {
+  fill: #db2777;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.map-room.is-tone-male .map-room__label {
+  fill: #2563eb;
+  font-weight: 750;
+}
+
 .map-divider text {
   fill: var(--faint);
   font-size: 8px;
@@ -434,6 +543,11 @@
   stroke: color-mix(in srgb, #ef4444 38%, var(--line));
 }
 
+.map-room.is-scheduled rect {
+  fill: color-mix(in srgb, #d97706 9%, var(--surface));
+  stroke: color-mix(in srgb, #d97706 34%, var(--line));
+}
+
 .map-room.is-no-data rect,
 .map-room.is-unknown rect {
   fill: var(--surface-2);
@@ -461,6 +575,10 @@
 
 .map-room.is-busy .map-room__dot {
   fill: #ef4444;
+}
+
+.map-room.is-scheduled .map-room__dot {
+  fill: #d97706;
 }
 
 .map-room.is-no-data .map-room__dot,
@@ -617,10 +735,22 @@
   border-color: #fecaca;
 }
 
+.status-pill.is-scheduled {
+  color: #b45309;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
 [data-theme='dark'] .status-pill.is-busy {
   color: #fca5a5;
   background: #2a1416;
   border-color: #4a2225;
+}
+
+[data-theme='dark'] .status-pill.is-scheduled {
+  color: #fcd34d;
+  background: #2a1e0c;
+  border-color: #4a3517;
 }
 
 .room-section {

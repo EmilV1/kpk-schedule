@@ -350,13 +350,17 @@ function summarizeRoomLesson(lesson) {
   };
 }
 
-function buildRoomStatus(entry, now) {
+function buildRoomStatus(entry, now, date = now.date) {
+  const isToday = date === now.date;
   const base = {
     cabinet: entry.room.cabinet || null,
     cabinetId: entry.cabinet ? entry.cabinet.id : null,
     status: 'no-data',
+    date,
+    isToday,
     current: [],
     next: null,
+    lessons: [],
     note: entry.note || '',
   };
   if (!entry.room.cabinet || !entry.cabinet || !entry.lessons) return base;
@@ -365,6 +369,16 @@ function buildRoomStatus(entry, now) {
     if (a.date !== b.date) return a.date < b.date ? -1 : 1;
     return roomLessonStart(a) - roomLessonStart(b);
   });
+  const dayLessons = lessons.filter((lesson) => lesson.date === date);
+  if (!isToday) {
+    return {
+      ...base,
+      status: dayLessons.length ? 'scheduled' : 'free',
+      lessons: dayLessons.map(summarizeRoomLesson),
+      note: dayLessons.length ? '' : 'На этот день уроков нет',
+    };
+  }
+
   const current = lessons.filter(
     (lesson) =>
       lesson.date === now.date &&
@@ -395,6 +409,7 @@ function buildRoomStatus(entry, now) {
     status: current.length ? 'busy' : 'free',
     current: current.map(summarizeRoomLesson),
     next: next ? summarizeRoomLesson(next) : null,
+    lessons: dayLessons.map(summarizeRoomLesson),
     note: !next
       ? current.length
         ? 'На ближайшие дни уроков больше нет'
@@ -411,8 +426,11 @@ async function handleRoomsApi(req, res, url) {
   }
 
   const now = moscowNow();
+  const requestedDate = url.searchParams.get('date');
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate || '') ? requestedDate : now.date;
+  const isToday = date === now.date;
   const fresh = url.searchParams.get('fresh') === '1';
-  const cacheKey = `${floor}:${now.date}`;
+  const cacheKey = `${floor}:${date}`;
   const cached = roomsCache.get(cacheKey);
   if (!fresh && cached && Date.now() - cached.fetchedAt < SCHEDULE_TTL_MS) {
     return sendJson(res, 200, { ...cached.data, cached: true });
@@ -432,7 +450,7 @@ async function handleRoomsApi(req, res, url) {
     const byName = new Map(
       (cabinets || []).map((cabinet) => [normalizeCabinetName(cabinet.name), cabinet])
     );
-    const end = datePlusDays(now.date, 3);
+    const end = isToday ? datePlusDays(date, 3) : date;
 
     const entries = await Promise.all(
       floorConfig.rooms.map(async (room) => {
@@ -445,7 +463,7 @@ async function handleRoomsApi(req, res, url) {
         }
         try {
           const data = await fetchUpstream(
-            `/cabinets/${cabinet.id}/lessons?startDate=${now.date}&endDate=${end}`
+            `/cabinets/${cabinet.id}/lessons?startDate=${date}&endDate=${end}`
           );
           return { room, cabinet, lessons: data.lessons || [], note: '' };
         } catch {
@@ -455,11 +473,12 @@ async function handleRoomsApi(req, res, url) {
     );
 
     const rooms = {};
-    for (const entry of entries) rooms[entry.room.id] = buildRoomStatus(entry, now);
+    for (const entry of entries) rooms[entry.room.id] = buildRoomStatus(entry, now, date);
     const payload = {
       floor,
       building: config.building || '',
-      date: now.date,
+      date,
+      isToday,
       now: now.timeText,
       updatedAt: new Date().toISOString(),
       rooms,
