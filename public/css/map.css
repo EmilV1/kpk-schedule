@@ -599,6 +599,12 @@
   fill: var(--muted);
 }
 
+.map-room.is-tone-male.is-no-data .map-room__label,
+.map-room.is-tone-male.is-unknown .map-room__label {
+  fill: #2563eb;
+  font-weight: 750;
+}
+
 .map-chips {
   display: flex;
   flex-wrap: wrap;
