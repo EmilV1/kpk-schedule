@@ -502,6 +502,29 @@
     "hasProfile": true
   },
   {
+    "id": "s-147",
+    "scheduleId": 147,
+    "scheduleIds": [
+      147
+    ],
+    "fio": "Галеев Альберт Рустамович",
+    "shortFio": "Галеев А. Р.",
+    "photo": null,
+    "position": "Преподаватель",
+    "department": "",
+    "educationLevel": "",
+    "specialization": "",
+    "qualification": "",
+    "totalExperience": "",
+    "teachingExperience": "",
+    "positionExperience": "",
+    "awards": "",
+    "retraining": "",
+    "disciplines": [],
+    "pageUrl": "",
+    "hasProfile": false
+  },
+  {
     "id": "p-37",
     "scheduleId": 16,
     "scheduleIds": [
