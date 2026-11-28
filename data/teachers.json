@@ -3204,6 +3204,29 @@
     "hasProfile": false
   },
   {
+    "id": "s-148",
+    "scheduleId": 148,
+    "scheduleIds": [
+      148
+    ],
+    "fio": "Шестакова Людмила Александровна",
+    "shortFio": "Шестакова Л. А.",
+    "photo": null,
+    "position": "Преподаватель",
+    "department": "",
+    "educationLevel": "",
+    "specialization": "",
+    "qualification": "",
+    "totalExperience": "",
+    "teachingExperience": "",
+    "positionExperience": "",
+    "awards": "",
+    "retraining": "",
+    "disciplines": [],
+    "pageUrl": "",
+    "hasProfile": false
+  },
+  {
     "id": "p-59",
     "scheduleId": 87,
     "scheduleIds": [

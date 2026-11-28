@@ -24,16 +24,16 @@
     "displayCabinets": true,
     "displayTeachers": true,
     "isTeachersView": false,
-    "publishedDate": "2026-11-27T09:14:42.074218Z"
+    "publishedDate": "2026-11-27T20:43:50.735754Z"
   },
   "publicationUrl": "https://site.mstimetables.ru/01a058c16a6e7b1a8b8ae632e9e51329",
   "sourceUrl": "https://edu.tatar.ru/sovetcki/org6264",
-  "updatedAt": "2026-11-27T10:37:08.491Z",
+  "updatedAt": "2026-11-28T09:54:21.784Z",
   "counts": {
     "groups": 61,
-    "teachers": 143,
+    "teachers": 144,
     "photos": 33,
-    "scheduleTeachers": 144,
+    "scheduleTeachers": 145,
     "profiles": 78
   }
 }
